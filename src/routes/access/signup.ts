@@ -43,7 +43,7 @@ router.post(
     );
 
     // Generate email verification token
-    await generateEmailVerificationToken(createdUser._id);
+    const emailVerificationToken = await generateEmailVerificationToken(createdUser._id);
 
     // Send email verification token to the user's email address
     // await sendVerificationEmail(createdUser.email, emailVerificationToken);
@@ -58,6 +58,7 @@ router.post(
     new SuccessResponse('Signup Successful', {
       user: userData,
       tokens: tokens,
+      emailVerificationToken: emailVerificationToken,
     }).send(res);
   }),
 );
