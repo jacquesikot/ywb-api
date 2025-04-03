@@ -35,7 +35,7 @@ export enum Industry {
 export default interface User {
   _id: Types.ObjectId;
   name: string;
-  username: string;
+  username?: string;
   profilePicUrl?: string;
   email: string;
   password: string;

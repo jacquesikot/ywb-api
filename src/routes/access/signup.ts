@@ -34,7 +34,6 @@ router.post(
         name: req.body.name,
         email: req.body.email,
         profilePicUrl: req.body.profilePicUrl,
-        username: req.body.username,
         password: passwordHash,
       } as User,
       accessTokenKey,
@@ -43,7 +42,9 @@ router.post(
     );
 
     // Generate email verification token
-    const emailVerificationToken = await generateEmailVerificationToken(createdUser._id);
+    const emailVerificationToken = await generateEmailVerificationToken(
+      createdUser._id,
+    );
 
     // Send email verification token to the user's email address
     // await sendVerificationEmail(createdUser.email, emailVerificationToken);
