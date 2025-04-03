@@ -67,6 +67,8 @@ export default {
       .optional(),
     companyName: Joi.string().optional(),
     industry: Joi.string().optional(),
+    website: Joi.string().optional().uri(),
+    organisationSize: Joi.string().optional(),
     businessType: Joi.string()
       .valid(BusinessType.BUSINESS, BusinessType.PERSONAL)
       .optional(),

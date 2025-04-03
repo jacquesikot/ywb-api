@@ -62,6 +62,8 @@ export default interface User {
   // business details
   companyName?: string;
   industry?: Industry;
+  website?: string;
+  organisationSize?: string;
   // client details
   businessType?: BusinessType;
   talentPoolPreferences?: Skill[];
@@ -178,6 +180,14 @@ const schema = new Schema<User>(
     },
     industry: {
       type: Schema.Types.String,
+    },
+    website: {
+      type: Schema.Types.String,
+      trim: true,
+    },
+    organisationSize: {
+      type: Schema.Types.String,
+      trim: true,
     },
     businessType: {
       type: Schema.Types.String,

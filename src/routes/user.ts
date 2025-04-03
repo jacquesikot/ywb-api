@@ -67,6 +67,9 @@ router.put(
     if (req.body.availability) user.availability = req.body.availability;
     if (req.body.companyName) user.companyName = req.body.companyName;
     if (req.body.industry) user.industry = req.body.industry;
+    if (req.body.website) user.website = req.body.website;
+    if (req.body.organisationSize)
+      user.organisationSize = req.body.organisationSize;
     if (req.body.businessType) user.businessType = req.body.businessType;
 
     await UserRepo.updateInfo(user);
