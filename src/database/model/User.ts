@@ -81,6 +81,7 @@ const schema = new Schema<User>(
     username: {
       type: Schema.Types.String,
       trim: true,
+      unique: true,
       maxlength: 200,
     },
     phone: {
