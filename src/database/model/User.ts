@@ -43,9 +43,9 @@ export default interface User {
   bio?: string;
   location?: {
     country: string;
-    state: string;
-    city: string;
-    address: string;
+    state?: string;
+    city?: string;
+    address?: string;
   };
   role: Role;
   companyRole?: string;
@@ -110,15 +110,19 @@ const schema = new Schema<User>(
     location: {
       country: {
         type: Schema.Types.String,
+        required: true,
       },
       state: {
         type: Schema.Types.String,
+        required: false,
       },
       city: {
         type: Schema.Types.String,
+        required: false,
       },
       address: {
         type: Schema.Types.String,
+        required: false,
       },
     },
     role: {
