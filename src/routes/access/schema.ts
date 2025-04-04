@@ -40,9 +40,9 @@ export default {
       .optional(),
     location: Joi.object({
       country: Joi.string().required(),
-      state: Joi.string().required(),
-      city: Joi.string().required(),
-      address: Joi.string().required(),
+      state: Joi.string().optional(),
+      city: Joi.string().optional(),
+      address: Joi.string().optional(),
     }).optional(),
     companyRole: Joi.string().optional(),
     username: Joi.string().optional(),
