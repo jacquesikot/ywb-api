@@ -42,7 +42,7 @@ export default interface User {
   phone?: string;
   bio?: string;
   location?: {
-    country: string;
+    country?: string;
     state?: string;
     city?: string;
     address?: string;
@@ -110,7 +110,7 @@ const schema = new Schema<User>(
     location: {
       country: {
         type: Schema.Types.String,
-        required: true,
+        required: false,
       },
       state: {
         type: Schema.Types.String,
