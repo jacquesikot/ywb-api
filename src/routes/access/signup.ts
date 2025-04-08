@@ -18,6 +18,86 @@ import { getUserData } from './utils';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /signup/basic:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Authentication]
+ *     security:
+ *       - apiKey: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *               - role
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: User's full name
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User's email address
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: User's password
+ *               profilePicUrl:
+ *                 type: string
+ *                 description: URL to user's profile picture
+ *               role:
+ *                 type: string
+ *                 enum: [ADMIN, EMPLOYER, FREELANCER]
+ *                 description: User's role in the system
+ *     responses:
+ *       200:
+ *         description: Signup successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         _id:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                         email:
+ *                           type: string
+ *                         verified:
+ *                           type: boolean
+ *                         type:
+ *                           type: string
+ *                         profilePicUrl:
+ *                           type: string
+ *                     tokens:
+ *                       type: object
+ *                       properties:
+ *                         accessToken:
+ *                           type: string
+ *                         refreshToken:
+ *                           type: string
+ *                     emailVerificationToken:
+ *                       type: string
+ *       400:
+ *         description: Bad request - User already registered
+ */
 router.post(
   '/basic',
   validator(schema.signup),

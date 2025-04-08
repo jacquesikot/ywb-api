@@ -11,6 +11,8 @@ import {
   ErrorType,
 } from './core/ApiError';
 import routes from './routes';
+import swaggerUi from 'swagger-ui-express';
+import { specs } from './core/swagger';
 
 process.on('uncaughtException', (e) => {
   Logger.error(e);
@@ -24,7 +26,20 @@ app.use(
 );
 app.use(cors({ origin: corsUrl, optionsSuccessStatus: 200 }));
 
-// Routes
+// Simple health check endpoint that doesn't require API key
+app.get('/status', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// Swagger Documentation
+// Make sure these routes are defined before any route with api key middleware
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(specs, { explorer: true }),
+);
+
+// API Routes
 app.use('/', routes);
 
 // catch 404 and forward to error handler

@@ -10,8 +10,68 @@ import schema from './schema';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Messages
+ *     description: Message management within chats
+ */
+
 router.use(authentication);
 
+/**
+ * @swagger
+ * /message/send:
+ *   post:
+ *     summary: Send a new message in a chat
+ *     tags: [Messages]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - chatId
+ *               - userId
+ *               - content
+ *             properties:
+ *               chatId:
+ *                 type: string
+ *                 description: ID of the chat the message belongs to
+ *               userId:
+ *                 type: string
+ *                 description: ID of the user sending the message
+ *               content:
+ *                 type: string
+ *                 description: Message content
+ *     responses:
+ *       200:
+ *         description: Message sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       $ref: '#/components/schemas/Message'
+ *       400:
+ *         description: Bad request - Missing required fields
+ *       404:
+ *         description: Not found - Chat not found
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.post(
   '/send',
   validator(schema.sendMessage),

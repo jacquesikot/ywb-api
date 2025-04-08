@@ -9,6 +9,30 @@ const router = express.Router();
 
 router.use(authentication);
 
+/**
+ * @swagger
+ * /logout:
+ *   delete:
+ *     summary: Logout user and invalidate tokens
+ *     tags: [Authentication]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized - Invalid or expired token
+ */
 router.delete(
   '/',
   asyncHandler(async (req: ProtectedRequest, res) => {

@@ -12,8 +12,64 @@ import schema from './schema';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Waves
+ *     description: Job application waves between freelancers and employers
+ */
+
 router.use(authentication);
 
+/**
+ * @swagger
+ * /wave/create:
+ *   post:
+ *     summary: Create a new wave (job application)
+ *     tags: [Waves]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - jobId
+ *               - freelancerId
+ *             properties:
+ *               jobId:
+ *                 type: string
+ *                 description: ID of the job being applied to
+ *               freelancerId:
+ *                 type: string
+ *                 description: ID of the freelancer applying for the job
+ *     responses:
+ *       200:
+ *         description: Wave created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     wave:
+ *                       $ref: '#/components/schemas/Wave'
+ *       400:
+ *         description: Bad request - Wave already exists for this job and freelancer
+ *       404:
+ *         description: Not found - Job not found
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.post(
   '/create',
   validator(schema.createWave),

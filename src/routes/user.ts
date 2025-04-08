@@ -18,6 +18,82 @@ const router = express.Router();
 
 router.use(authentication);
 
+/**
+ * @swagger
+ * /user/profile:
+ *   put:
+ *     summary: Update user profile
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               profilePicUrl:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               bio:
+ *                 type: string
+ *               location:
+ *                 type: string
+ *               companyRole:
+ *                 type: string
+ *               skills:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               talentPoolPreferences:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               experienceLevel:
+ *                 type: string
+ *               portfolioLinks:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               preferredRate:
+ *                 type: number
+ *               availability:
+ *                 type: string
+ *               companyName:
+ *                 type: string
+ *               industry:
+ *                 type: string
+ *               website:
+ *                 type: string
+ *               organisationSize:
+ *                 type: string
+ *               businessType:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *       400:
+ *         description: Bad request - User not registered or invalid data
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.put(
   '/profile',
   validator(schema.updateUser),
@@ -77,6 +153,54 @@ router.put(
   }),
 );
 
+/**
+ * @swagger
+ * /user/profile:
+ *   get:
+ *     summary: Get user profile
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     profilePicUrl:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     bio:
+ *                       type: string
+ *                     location:
+ *                       type: string
+ *                     skills:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       400:
+ *         description: Bad request - User not registered
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.get(
   '/profile',
   asyncHandler(async (req: ProtectedRequest, res) => {
@@ -90,6 +214,57 @@ router.get(
   }),
 );
 
+/**
+ * @swagger
+ * /user/password:
+ *   put:
+ *     summary: Update user password
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 description: Current password
+ *               newPassword:
+ *                 type: string
+ *                 description: New password
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     tokens:
+ *                       type: object
+ *                       properties:
+ *                         accessToken:
+ *                           type: string
+ *                         refreshToken:
+ *                           type: string
+ *       400:
+ *         description: Bad request - User not found or credential not set
+ *       401:
+ *         description: Authentication failure - Incorrect current password
+ */
 router.put(
   '/password',
   validator(schema.updatePassword),

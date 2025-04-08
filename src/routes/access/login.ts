@@ -14,6 +14,81 @@ import { getUserData } from './utils';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Authentication
+ *     description: Authentication and user access
+ */
+
+/**
+ * @swagger
+ * /login/basic:
+ *   post:
+ *     summary: Login with email and password
+ *     tags: [Authentication]
+ *     security:
+ *       - apiKey: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User's email address
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: User's password
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         _id:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                         email:
+ *                           type: string
+ *                         verified:
+ *                           type: boolean
+ *                         type:
+ *                           type: string
+ *                         profilePicUrl:
+ *                           type: string
+ *                     tokens:
+ *                       type: object
+ *                       properties:
+ *                         accessToken:
+ *                           type: string
+ *                         refreshToken:
+ *                           type: string
+ *       400:
+ *         description: Bad request - User not registered or credential not set
+ *       401:
+ *         description: Authentication failure - Invalid credentials
+ */
 router.post(
   '/basic',
   validator(schema.credential),

@@ -11,8 +11,72 @@ import schema from './schema';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Chats
+ *     description: Chat management between users for jobs
+ */
+
 router.use(authentication);
 
+/**
+ * @swagger
+ * /chat/create:
+ *   post:
+ *     summary: Create a new chat for a job
+ *     tags: [Chats]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - jobId
+ *               - userId
+ *               - message
+ *               - waveId
+ *             properties:
+ *               jobId:
+ *                 type: string
+ *                 description: ID of the job the chat is related to
+ *               userId:
+ *                 type: string
+ *                 description: ID of the user creating the chat
+ *               message:
+ *                 type: string
+ *                 description: Initial message content
+ *               waveId:
+ *                 type: string
+ *                 description: ID of the related wave (job application)
+ *     responses:
+ *       200:
+ *         description: Chat created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     chat:
+ *                       $ref: '#/components/schemas/Chat'
+ *       400:
+ *         description: Bad request - Missing required fields
+ *       404:
+ *         description: Not found - Job not found
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.post(
   '/create',
   validator(schema.createChat),

@@ -9,8 +9,43 @@ import asyncHandler from '../helpers/asyncHandler';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Dashboard
+ *     description: User dashboard with personalized content
+ */
+
 router.use(authentication);
 
+/**
+ * @swagger
+ * /dashboard:
+ *   get:
+ *     summary: Get personalized dashboard content based on user role
+ *     tags: [Dashboard]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard content retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     result:
+ *                       type: object
+ *                       description: Content varies based on user role
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.get(
   '/',
   asyncHandler(async (req: ProtectedRequest, res) => {

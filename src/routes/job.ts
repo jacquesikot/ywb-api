@@ -20,8 +20,95 @@ import schema from './schema';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Jobs
+ *     description: Job listing and management
+ */
+
 router.use(authentication);
 
+/**
+ * @swagger
+ * /job/all:
+ *   get:
+ *     summary: Get all jobs with optional filters
+ *     tags: [Jobs]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [OPEN, IN_PROGRESS, COMPLETED, CANCELLED]
+ *         description: Filter jobs by status
+ *       - in: query
+ *         name: locationPreference
+ *         schema:
+ *           type: string
+ *           enum: [REMOTE, ONSITE, HYBRID]
+ *         description: Filter jobs by location preference
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [FULL_TIME, PART_TIME, CONTRACT, ONE_TIME]
+ *         description: Filter jobs by job type
+ *       - in: query
+ *         name: budgetType
+ *         schema:
+ *           type: string
+ *           enum: [FIXED, HOURLY]
+ *         description: Filter jobs by budget type
+ *       - in: query
+ *         name: minBudget
+ *         schema:
+ *           type: number
+ *         description: Minimum budget value
+ *       - in: query
+ *         name: maxBudget
+ *         schema:
+ *           type: number
+ *         description: Maximum budget value
+ *       - in: query
+ *         name: hoursPerWeek
+ *         schema:
+ *           type: number
+ *         description: Filter by hours per week
+ *       - in: query
+ *         name: skills
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Filter by required skills (skill IDs)
+ *     responses:
+ *       200:
+ *         description: Jobs fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     jobs:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *       400:
+ *         description: Bad request - Invalid filter parameters
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.get(
   '/all',
   asyncHandler(async (req, res) => {
@@ -104,6 +191,40 @@ router.get(
     }).send(res);
   }),
 );
+
+/**
+ * @swagger
+ * /job/match:
+ *   get:
+ *     summary: Get jobs that match the user's skills and preferences
+ *     tags: [Jobs]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Matching jobs fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     jobs:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *       400:
+ *         description: Bad request - User not registered
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.get(
   '/match',
   asyncHandler(async (req: ProtectedRequest, res) => {
@@ -122,6 +243,45 @@ router.get(
     }).send(res);
   }),
 );
+
+/**
+ * @swagger
+ * /job/{jobId}:
+ *   get:
+ *     summary: Get job details by ID
+ *     tags: [Jobs]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the job to fetch
+ *     responses:
+ *       200:
+ *         description: Job fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     job:
+ *                       type: object
+ *       400:
+ *         description: Bad request - Job not found
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.get(
   '/:jobId',
   asyncHandler(async (req, res) => {
@@ -139,6 +299,89 @@ router.get(
 );
 
 router.use(roleAccess([RoleCode.BUSINESS, RoleCode.CLIENT]));
+
+/**
+ * @swagger
+ * /job/create:
+ *   post:
+ *     summary: Create a new job posting
+ *     tags: [Jobs]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - description
+ *               - type
+ *               - locationPreference
+ *               - budget
+ *               - skills
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Job title
+ *               description:
+ *                 type: string
+ *                 description: Detailed job description
+ *               type:
+ *                 type: string
+ *                 enum: [FULL_TIME, PART_TIME, CONTRACT, ONE_TIME]
+ *                 description: Type of job
+ *               locationPreference:
+ *                 type: string
+ *                 enum: [REMOTE, ONSITE, HYBRID]
+ *                 description: Location preference for the job
+ *               budget:
+ *                 type: object
+ *                 required:
+ *                   - type
+ *                   - value
+ *                 properties:
+ *                   type:
+ *                     type: string
+ *                     enum: [FIXED, HOURLY]
+ *                     description: Budget type
+ *                   value:
+ *                     type: number
+ *                     description: Budget amount
+ *               hoursPerWeek:
+ *                 type: number
+ *                 description: Hours of work required per week
+ *               skills:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of skill IDs required for the job
+ *     responses:
+ *       200:
+ *         description: Job created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     job:
+ *                       type: object
+ *       400:
+ *         description: Bad request - User not registered or validation errors
+ *       401:
+ *         description: Unauthorized - Invalid token
+ *       403:
+ *         description: Forbidden - User does not have required role
+ */
 router.post(
   '/create',
   validator(schema.createJob),

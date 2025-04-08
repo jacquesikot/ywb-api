@@ -10,6 +10,60 @@ import validateIdParam from '../../helpers/paramIdValidator';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Admin - Skills
+ *     description: Skill management for administrators
+ */
+
+/**
+ * @swagger
+ * /admin/skill:
+ *   post:
+ *     summary: Create a new skill
+ *     tags: [Admin - Skills]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the skill
+ *     responses:
+ *       200:
+ *         description: Skill created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *       400:
+ *         description: Bad request - Skill already exists
+ *       401:
+ *         description: Unauthorized - Invalid token
+ *       403:
+ *         description: Forbidden - Not an admin
+ */
 router.post(
   '/',
   validator(schema.createSkill),
@@ -23,6 +77,41 @@ router.post(
   }),
 );
 
+/**
+ * @swagger
+ * /admin/skill:
+ *   get:
+ *     summary: Get all skills
+ *     tags: [Admin - Skills]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Skills retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *       401:
+ *         description: Unauthorized - Invalid token
+ *       403:
+ *         description: Forbidden - Not an admin
+ */
 router.get(
   '/',
   asyncHandler(async (req: express.Request, res: express.Response) => {
@@ -31,6 +120,48 @@ router.get(
   }),
 );
 
+/**
+ * @swagger
+ * /admin/skill/{id}:
+ *   delete:
+ *     summary: Delete a skill
+ *     tags: [Admin - Skills]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the skill to delete
+ *     responses:
+ *       200:
+ *         description: Skill deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *       400:
+ *         description: Bad request - Skill not found
+ *       401:
+ *         description: Unauthorized - Invalid token
+ *       403:
+ *         description: Forbidden - Not an admin
+ */
 router.delete(
   '/:id',
   asyncHandler(async (req: SkillRequest, res) => {
