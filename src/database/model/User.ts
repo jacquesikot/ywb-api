@@ -24,12 +24,15 @@ export enum BusinessType {
   PERSONAL = 'PERSONAL',
 }
 export enum Industry {
+  DESIGN = 'DESIGN',
+  SOFTWARE = 'SOFTWARE',
+  PRODUCT = 'PRODUCT',
+  WRITING = 'WRITING',
+  MARKETING = 'MARKETING',
+  ARCHITECTURE = 'ARCHITECTURE',
+  ADMIN = 'ADMIN',
   TECHNOLOGY = 'TECHNOLOGY',
-  FINANCE = 'FINANCE',
-  HEALTHCARE = 'HEALTHCARE',
-  EDUCATION = 'EDUCATION',
-  RETAIL = 'RETAIL',
-  MANUFACTURING = 'MANUFACTURING',
+  ENGINEERING = 'ENGINEERING',
   OTHER = 'OTHER',
 }
 export default interface User {
@@ -42,10 +45,10 @@ export default interface User {
   phone?: string;
   bio?: string;
   location?: {
-    country: string;
-    state: string;
-    city: string;
-    address: string;
+    country?: string;
+    state?: string;
+    city?: string;
+    address?: string;
   };
   role: Role;
   companyRole?: string;
@@ -78,6 +81,7 @@ const schema = new Schema<User>(
     username: {
       type: Schema.Types.String,
       trim: true,
+      unique: true,
       maxlength: 200,
     },
     phone: {
@@ -110,15 +114,19 @@ const schema = new Schema<User>(
     location: {
       country: {
         type: Schema.Types.String,
+        required: false,
       },
       state: {
         type: Schema.Types.String,
+        required: false,
       },
       city: {
         type: Schema.Types.String,
+        required: false,
       },
       address: {
         type: Schema.Types.String,
+        required: false,
       },
     },
     role: {
