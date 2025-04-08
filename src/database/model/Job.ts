@@ -26,25 +26,24 @@ export enum BudgetType {
   HOURLY = 'HOURLY',
 }
 
+export enum JobVisibility {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+}
+
 export default interface Job {
   _id: Types.ObjectId;
   user: Types.ObjectId;
   title: string;
   description: string;
+  category: string;
   skills: Skill[];
   waves: Types.ObjectId[];
   locationPreference: LocationPreference;
-  resource?: {
-    figma?: string;
-    zeplin?: string;
-    invision?: string;
-    marvel?: string;
-    dropbox?: string;
-    googleDrive?: string;
-    box?: string;
-    github?: string;
-    other?: string;
-  };
+  resource?: string;
+  additionalQuestions?: string[];
+  images?: string[];
+  visibility: JobVisibility;
   budget: {
     type: BudgetType;
     value?: number;
@@ -74,6 +73,10 @@ const schema = new Schema<Job>(
       type: Schema.Types.String,
       required: true,
     },
+    category: {
+      type: Schema.Types.String,
+      required: true,
+    },
     skills: [
       {
         type: Schema.Types.ObjectId,
@@ -92,33 +95,23 @@ const schema = new Schema<Job>(
       required: true,
     },
     resource: {
-      figma: {
+      type: Schema.Types.String,
+    },
+    additionalQuestions: [
+      {
         type: Schema.Types.String,
       },
-      zeplin: {
+    ],
+    images: [
+      {
         type: Schema.Types.String,
       },
-      invision: {
-        type: Schema.Types.String,
-      },
-      marvel: {
-        type: Schema.Types.String,
-      },
-      dropbox: {
-        type: Schema.Types.String,
-      },
-      googleDrive: {
-        type: Schema.Types.String,
-      },
-      box: {
-        type: Schema.Types.String,
-      },
-      github: {
-        type: Schema.Types.String,
-      },
-      other: {
-        type: Schema.Types.String,
-      },
+    ],
+    visibility: {
+      type: Schema.Types.String,
+      enum: Object.values(JobVisibility),
+      default: JobVisibility.PUBLIC,
+      required: true,
     },
     type: {
       type: Schema.Types.String,

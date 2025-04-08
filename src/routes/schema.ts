@@ -1,10 +1,16 @@
 import Joi from 'joi';
-import { BudgetType, JobType, LocationPreference } from '../database/model/Job';
+import {
+  BudgetType,
+  JobType,
+  JobVisibility,
+  LocationPreference,
+} from '../database/model/Job';
 
 export default {
   createJob: Joi.object().keys({
     title: Joi.string().required().min(3).max(100),
     description: Joi.string().required().min(10),
+    category: Joi.string().required(),
     skills: Joi.array().items(Joi.string().required()).min(1).required(),
     budget: Joi.object().keys({
       type: Joi.string().valid(BudgetType.HOURLY, BudgetType.FIXED).required(),
@@ -19,17 +25,12 @@ export default {
       .valid(JobType.CONTRACT, JobType.FULL_TIME, JobType.PART_TIME)
       .required(),
     timeline: Joi.string().required().max(50),
-    resource: Joi.object().keys({
-      figma: Joi.string().uri(),
-      zeplin: Joi.string().uri(),
-      invision: Joi.string().uri(),
-      marvel: Joi.string().uri(),
-      dropbox: Joi.string().uri(),
-      googleDrive: Joi.string().uri(),
-      box: Joi.string().uri(),
-      github: Joi.string().uri(),
-      other: Joi.string().uri(),
-    }),
+    resource: Joi.string(),
+    additionalQuestions: Joi.array().items(Joi.string()),
+    images: Joi.array().items(Joi.string()),
+    visibility: Joi.string()
+      .valid(JobVisibility.PUBLIC, JobVisibility.PRIVATE)
+      .default(JobVisibility.PUBLIC),
     hoursPerWeek: Joi.number().min(1).max(168),
   }),
   createWave: Joi.object().keys({
