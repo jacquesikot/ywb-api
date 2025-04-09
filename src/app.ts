@@ -27,8 +27,11 @@ app.use(cors({ origin: corsUrl, optionsSuccessStatus: 200 }));
 
 // Swagger Documentation
 // Make sure these routes are defined before any route with api key middleware
+const swaggerDocs = swaggerUi.setup(specs, { explorer: true });
 app.use('/api-docs', swaggerUi.serve);
-app.use('/api-docs', swaggerUi.setup(specs, { explorer: true }));
+app.use('/api-docs', (req, res, next) => {
+  return swaggerDocs(req, res, next);
+});
 
 // API Routes
 app.use('/', routes);

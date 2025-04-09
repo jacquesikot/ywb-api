@@ -6,6 +6,8 @@ import { SuccessResponse } from '../core/ApiResponse';
 import { WaveStatus } from '../database/model/Wave';
 import JobRepo from '../database/repository/JobRepo';
 import WaveRepo from '../database/repository/WaveRepo';
+import NotificationRepo from '../database/repository/NotificationRepo';
+import { NotificationType } from '../database/model/Notification';
 import asyncHandler from '../helpers/asyncHandler';
 import validator from '../helpers/validator';
 import schema from './schema';
@@ -93,6 +95,16 @@ router.post(
     };
 
     const wave = await WaveRepo.create(waveData);
+
+    await NotificationRepo.create({
+      type: NotificationType.NEW_WAVE,
+      message: 'New wave',
+      data: {
+        waveId: wave._id,
+        jobId: job._id,
+        freelancerId: freelancerId,
+      },
+    });
 
     new SuccessResponse('Wave created successfully', { wave }).send(res);
   }),
