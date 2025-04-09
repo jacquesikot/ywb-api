@@ -1,18 +1,17 @@
-import express, { Request, Response, NextFunction } from 'express';
-import Logger from './core/Logger';
 import cors from 'cors';
-import { corsUrl, environment } from './config';
-import './database'; // initialize database
-// import './cache'; // initialize cache
-import {
-  NotFoundError,
-  ApiError,
-  InternalError,
-  ErrorType,
-} from './core/ApiError';
-import routes from './routes';
+import express, { NextFunction, Request, Response } from 'express';
 import swaggerUi from 'swagger-ui-express';
+import { corsUrl, environment } from './config';
+import {
+  ApiError,
+  ErrorType,
+  InternalError,
+  NotFoundError,
+} from './core/ApiError';
+import Logger from './core/Logger';
 import { specs } from './core/swagger';
+import './database'; // initialize database
+import routes from './routes';
 
 process.on('uncaughtException', (e) => {
   Logger.error(e);
@@ -25,11 +24,6 @@ app.use(
   express.urlencoded({ limit: '10mb', extended: true, parameterLimit: 50000 }),
 );
 app.use(cors({ origin: corsUrl, optionsSuccessStatus: 200 }));
-
-// Simple health check endpoint that doesn't require API key
-app.get('/status', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
-});
 
 // Swagger Documentation
 // Make sure these routes are defined before any route with api key middleware

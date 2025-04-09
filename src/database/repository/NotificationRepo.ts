@@ -1,4 +1,7 @@
-import Notification, { NotificationModel } from '../model/Notification';
+import Notification, {
+  NotificationModel,
+  NotificationStatus,
+} from '../model/Notification';
 
 async function findById(id: string): Promise<Notification | null> {
   return await NotificationModel.findById(id).lean().exec();
@@ -18,11 +21,22 @@ async function create(
 
 async function updateStatus(
   notificationId: string,
-  status: 'unread' | 'read',
+  status: NotificationStatus,
 ): Promise<Notification | null> {
-  return await NotificationModel.findByIdAndUpdate(notificationId)
+  return await NotificationModel.findByIdAndUpdate(
+    notificationId,
+    { status },
+    { new: true },
+  )
     .lean()
     .exec();
+}
+
+async function markAllAsRead(userId: string, chatId: string): Promise<void> {
+  await NotificationModel.updateMany(
+    { userId, data: { chatId }, status: NotificationStatus.UNREAD },
+    { status: NotificationStatus.READ },
+  );
 }
 
 async function deleteById(id: string): Promise<Notification | null> {
@@ -38,6 +52,7 @@ export default {
   findByUserId,
   create,
   updateStatus,
+  markAllAsRead,
   deleteById,
   findAll,
 };

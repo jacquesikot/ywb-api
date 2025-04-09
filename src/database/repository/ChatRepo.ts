@@ -12,6 +12,12 @@ async function findByUserId(userId: string): Promise<Chat[]> {
   return ChatModel.find({ userId }).lean().exec();
 }
 
+async function findByMemberId(memberId: string): Promise<Chat[]> {
+  return ChatModel.find({ members: { $in: [memberId] } })
+    .lean()
+    .exec();
+}
+
 async function create(chatData: Partial<Chat>): Promise<Chat> {
   chatData.createdAt = new Date();
   const newChat = new ChatModel(chatData);
@@ -22,6 +28,13 @@ async function deleteById(id: string): Promise<Chat | null> {
   return ChatModel.findByIdAndDelete(id).lean().exec();
 }
 
+async function update(
+  id: string,
+  chatData: Partial<Chat>,
+): Promise<Chat | null> {
+  return ChatModel.findByIdAndUpdate(id, chatData, { new: true }).lean().exec();
+}
+
 async function findAll(): Promise<Chat[]> {
   return ChatModel.find().lean().exec();
 }
@@ -30,7 +43,9 @@ export default {
   findById,
   findByJobId,
   findByUserId,
+  findByMemberId,
   create,
+  update,
   deleteById,
   findAll,
 };

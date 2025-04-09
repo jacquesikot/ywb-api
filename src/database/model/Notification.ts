@@ -6,6 +6,7 @@ export const COLLECTION_NAME = 'Notifications';
 export enum NotificationType {
   NEW_MESSAGE = 'new_message',
   NEW_WAVE = 'new_wave',
+  CHAT_CREATED = 'chat_created',
 }
 
 export enum NotificationStatus {
@@ -18,7 +19,7 @@ export default interface Notification {
   type: NotificationType;
   userId: Types.ObjectId;
   message: string;
-  data: any;
+  data: any; // For NEW_MESSAGE type: { chatId, messageId, content, senderId }
   status: NotificationStatus;
   createAt: Date;
 }

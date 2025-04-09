@@ -5,6 +5,7 @@ import { BadRequestError } from '../core/ApiError';
 import { SuccessResponse } from '../core/ApiResponse';
 import NotificationRepo from '../database/repository/NotificationRepo';
 import asyncHandler from '../helpers/asyncHandler';
+import { NotificationType } from '../database/model/Notification';
 
 const router = express.Router();
 
@@ -157,8 +158,12 @@ router.post(
 
     const notification = await NotificationRepo.create({
       userId,
-      chatId,
-      messageId,
+      type: NotificationType.NEW_MESSAGE,
+      message: 'New message',
+      data: {
+        chatId,
+        messageId,
+      },
     });
 
     new SuccessResponse('Notification created successfully', {

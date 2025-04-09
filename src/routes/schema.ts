@@ -40,10 +40,17 @@ export default {
   createChat: Joi.object().keys({
     receiverId: Joi.string().required(),
     message: Joi.string().min(1).required(),
+    jobId: Joi.string(),
+    waveId: Joi.string(),
   }),
   sendMessage: Joi.object().keys({
     chatId: Joi.string().required(),
-    userId: Joi.string().required(),
     content: Joi.string().min(1).required(),
+  }),
+  addChatMembers: Joi.object().keys({
+    memberIds: Joi.array().items(Joi.string().required()).min(1).required(),
+  }),
+  readMessages: Joi.object().keys({
+    chatId: Joi.string().required(),
   }),
 };
