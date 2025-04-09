@@ -35,6 +35,14 @@ export enum Industry {
   ENGINEERING = 'ENGINEERING',
   OTHER = 'OTHER',
 }
+export enum Plan {
+  FREE = 'FREE',
+  PRO = 'PRO',
+}
+export enum PlanType {
+  MONTHLY = 'MONTHLY',
+  YEARLY = 'YEARLY',
+}
 export default interface User {
   _id: Types.ObjectId;
   name: string;
@@ -70,6 +78,9 @@ export default interface User {
   // client details
   businessType?: BusinessType;
   talentPoolPreferences?: Skill[];
+  // plan details
+  plan: Plan;
+  planType: PlanType;
 }
 const schema = new Schema<User>(
   {
@@ -208,6 +219,16 @@ const schema = new Schema<User>(
           ref: 'Skill',
         },
       ],
+    },
+    plan: {
+      type: Schema.Types.String,
+      enum: Object.values(Plan),
+      default: Plan.FREE,
+    },
+    planType: {
+      type: Schema.Types.String,
+      enum: Object.values(PlanType),
+      default: PlanType.MONTHLY,
     },
   },
   {

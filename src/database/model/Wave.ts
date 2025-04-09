@@ -5,7 +5,8 @@ export const COLLECTION_NAME = 'waves';
 
 export enum WaveStatus {
   WAVED = 'waved',
-  CONVERTED_TO_CHAT = 'converted_to_chat',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
 }
 
 export default interface Wave {

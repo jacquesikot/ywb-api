@@ -5,15 +5,21 @@ export const COLLECTION_NAME = 'chats';
 
 export default interface Chat {
   _id: Types.ObjectId;
-  users: Types.ObjectId[];
-  jobId: Types.ObjectId;
-  waveId: Types.ObjectId;
+  ownerId: Types.ObjectId;
+  members: Types.ObjectId[];
+  jobId?: Types.ObjectId;
+  waveId?: Types.ObjectId;
   createdAt: Date;
 }
 
 const schema = new Schema<Chat>(
   {
-    users: {
+    ownerId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    members: {
       type: [Schema.Types.ObjectId],
       ref: 'User',
       required: true,
@@ -21,12 +27,12 @@ const schema = new Schema<Chat>(
     jobId: {
       type: Schema.Types.ObjectId,
       ref: 'Job',
-      required: true,
+      required: false,
     },
     waveId: {
       type: Schema.Types.ObjectId,
       ref: 'Wave',
-      required: true,
+      required: false,
     },
     createdAt: {
       type: Date,
@@ -38,6 +44,6 @@ const schema = new Schema<Chat>(
   },
 );
 
-schema.index({ jobId: 1, participants: 1 }, { unique: true });
+schema.index({ ownerId: 1, members: 1 }, { unique: true });
 
 export const ChatModel = model<Chat>(DOCUMENT_NAME, schema, COLLECTION_NAME);

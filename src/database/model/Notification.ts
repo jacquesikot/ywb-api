@@ -3,12 +3,23 @@ import { Schema, Types, model } from 'mongoose';
 export const DOCUMENT_NAME = 'Notification';
 export const COLLECTION_NAME = 'Notifications';
 
+export enum NotificationType {
+  NEW_MESSAGE = 'new_message',
+  NEW_WAVE = 'new_wave',
+}
+
+export enum NotificationStatus {
+  UNREAD = 'unread',
+  READ = 'read',
+}
+
 export default interface Notification {
   _id: Types.ObjectId;
+  type: NotificationType;
   userId: Types.ObjectId;
-  chatId: Types.ObjectId;
-  messageId: Types.ObjectId;
-  status: 'unread' | 'read';
+  message: string;
+  data: any;
+  status: NotificationStatus;
   createAt: Date;
 }
 
@@ -19,20 +30,23 @@ const schema = new Schema(
       ref: 'User',
       required: true,
     },
-    chatId: {
-      type: Types.ObjectId,
-      ref: 'Chat',
+    type: {
+      type: String,
+      enum: Object.values(NotificationType),
       required: true,
     },
-    messageId: {
-      type: Types.ObjectId,
-      ref: 'Message',
+    message: {
+      type: String,
       required: true,
+    },
+    data: {
+      type: Object,
+      required: false,
     },
     status: {
       type: String,
-      enum: ['unread', 'read'],
-      default: 'unread',
+      enum: Object.values(NotificationStatus),
+      default: NotificationStatus.UNREAD,
     },
     createAt: {
       type: Date,
@@ -43,6 +57,7 @@ const schema = new Schema(
     versionKey: false,
   },
 );
+
 schema.index({ userId: 1, status: 1 });
 
 export const NotificationModel = model<Notification>(

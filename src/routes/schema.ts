@@ -38,10 +38,8 @@ export default {
     freelancerId: Joi.string().required(),
   }),
   createChat: Joi.object().keys({
-    jobId: Joi.string().required(),
-    userId: Joi.string().required(),
+    receiverId: Joi.string().required(),
     message: Joi.string().min(1).required(),
-    waveId: Joi.string().required(),
   }),
   sendMessage: Joi.object().keys({
     chatId: Joi.string().required(),

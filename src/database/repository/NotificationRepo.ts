@@ -8,10 +8,6 @@ async function findByUserId(userId: string): Promise<Notification[]> {
   return await NotificationModel.find({ userId }).lean().exec();
 }
 
-async function findByChatId(chatId: string): Promise<Notification[]> {
-  return await NotificationModel.find({ chatId }).lean().exec();
-}
-
 async function create(
   notificationData: Partial<Notification>,
 ): Promise<Notification> {
@@ -40,7 +36,6 @@ async function findAll(): Promise<Notification[]> {
 export default {
   findById,
   findByUserId,
-  findByChatId,
   create,
   updateStatus,
   deleteById,
