@@ -1,5 +1,5 @@
 import cors from 'cors';
-import express, { NextFunction, Request, Response } from 'express';
+import express, { NextFunction, Request, Response, Router } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { corsUrl, environment } from './config';
 import {
@@ -11,7 +11,7 @@ import {
 import Logger from './core/Logger';
 import { specs } from './core/swagger';
 import './database'; // initialize database
-import routes from './routes';
+import routes from './routes/index';
 
 process.on('uncaughtException', (e) => {
   Logger.error(e);
@@ -27,11 +27,10 @@ app.use(cors({ origin: corsUrl, optionsSuccessStatus: 200 }));
 
 // Swagger Documentation
 // Make sure these routes are defined before any route with api key middleware
-const swaggerDocs = swaggerUi.setup(specs, { explorer: true });
-app.use('/api-docs', swaggerUi.serve);
-app.use('/api-docs', (req, res, next) => {
-  return swaggerDocs(req, res, next);
-});
+const swaggerRouter = Router();
+swaggerRouter.use(swaggerUi.serve);
+swaggerRouter.get('/', swaggerUi.setup(specs, { explorer: true }));
+app.use('/api-docs', swaggerRouter);
 
 // API Routes
 app.use('/', routes);
