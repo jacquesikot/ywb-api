@@ -1,13 +1,17 @@
-import { PublicRequest } from 'app-request';
+import { ProtectedRequest } from 'app-request';
 import express from 'express';
 import authentication from '../auth/authentication';
 import { BadRequestError, NotFoundError } from '../core/ApiError';
 import { SuccessResponse } from '../core/ApiResponse';
-import { WaveStatus } from '../database/model/Wave';
-import JobRepo from '../database/repository/JobRepo';
-import WaveRepo from '../database/repository/WaveRepo';
-import NotificationRepo from '../database/repository/NotificationRepo';
 import { NotificationType } from '../database/model/Notification';
+import { Plan } from '../database/model/User';
+import { WaveStatus } from '../database/model/Wave';
+import ChatRepo from '../database/repository/ChatRepo';
+import JobRepo from '../database/repository/JobRepo';
+import MessageRepo from '../database/repository/MessageRepo';
+import NotificationRepo from '../database/repository/NotificationRepo';
+import UserRepo from '../database/repository/UserRepo';
+import WaveRepo from '../database/repository/WaveRepo';
 import asyncHandler from '../helpers/asyncHandler';
 import validator from '../helpers/validator';
 import schema from './schema';
@@ -75,8 +79,11 @@ router.use(authentication);
 router.post(
   '/create',
   validator(schema.createWave),
-  asyncHandler(async (req: PublicRequest, res) => {
+  asyncHandler(async (req: ProtectedRequest, res) => {
     const { jobId, freelancerId } = req.body;
+    const user = req.user;
+
+    const freelancerDetails = await UserRepo.findById(freelancerId);
 
     const job = await JobRepo.findById(jobId);
     if (!job) throw new NotFoundError('Job not found');
@@ -105,6 +112,20 @@ router.post(
         freelancerId: freelancerId,
       },
     });
+
+    if (freelancerDetails?.plan === Plan.PRO) {
+      const newChat = await ChatRepo.create({
+        jobId,
+        waveId: wave._id,
+        ownerId: freelancerId,
+        members: [freelancerId, user._id],
+      });
+      await MessageRepo.create({
+        chatId: newChat._id,
+        content: 'New wave from ' + user.name + ' for ' + job.title,
+        userId: user._id,
+      });
+    }
 
     new SuccessResponse('Wave created successfully', { wave }).send(res);
   }),
