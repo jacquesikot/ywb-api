@@ -53,4 +53,24 @@ export default {
   readMessages: Joi.object().keys({
     chatId: Joi.string().required(),
   }),
+  createKYC: Joi.object().keys({
+    taxIdentificationNumber: Joi.string().required(),
+    businessAddress: Joi.string(),
+    businessLocation: Joi.string(),
+    certificateOfIncorporation: Joi.string(),
+    businessLicence: Joi.string(),
+    proofOfAddress: Joi.string().required(),
+    ownershipAndControlInformation: Joi.string(),
+    governmentIssuedId: Joi.string(),
+  }),
+  updateKYC: Joi.object().keys({
+    taxIdentificationNumber: Joi.string(),
+    businessAddress: Joi.string(),
+    businessLocation: Joi.string(),
+    certificateOfIncorporation: Joi.string(),
+    businessLicence: Joi.string(),
+    proofOfAddress: Joi.string(),
+    ownershipAndControlInformation: Joi.string(),
+    governmentIssuedId: Joi.string(),
+  }),
 };

@@ -7,11 +7,13 @@ import logout from './access/logout';
 import signup from './access/signup';
 import verifyEmail from './access/verifyEmail';
 import adminApiKey from './admin/adminApiKey';
+import adminKYC from './admin/adminKYC';
 import role from './admin/role';
 import skill from './admin/skill';
 import chat from './chat';
 import dashboard from './dashboard';
 import job from './job';
+import kyc from './kyc';
 import message from './message';
 import notification from './notification';
 import user from './user';
@@ -36,10 +38,12 @@ router.use('/message', permission(Permission.GENERAL), message);
 router.use('/notification', permission(Permission.GENERAL), notification);
 router.use('/dashboard', permission(Permission.GENERAL), dashboard);
 router.use('/job', permission(Permission.GENERAL), job);
+router.use('/kyc', permission(Permission.GENERAL), kyc);
 
 // Admin routes
 router.use('/admin/apiKey', permission(Permission.ADMIN), adminApiKey);
 router.use('/admin/role', permission(Permission.ADMIN), role);
 router.use('/admin/skill', permission(Permission.ADMIN), skill);
+router.use('/admin/kyc', permission(Permission.ADMIN), adminKYC);
 
 export default router;
