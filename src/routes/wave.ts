@@ -131,4 +131,72 @@ router.post(
   }),
 );
 
+/**
+ * @swagger
+ * /wave/user:
+ *   get:
+ *     summary: Get all waves for the authenticated user
+ *     tags: [Waves]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [waved, accepted, rejected]
+ *         description: Filter waves by status (optional)
+ *     responses:
+ *       200:
+ *         description: List of user's waves retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     waves:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Wave'
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
+router.get(
+  '/user',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const userId = req.user._id;
+    const { status } = req.query;
+
+    let waves = await WaveRepo.findFreelancerById(userId.toString());
+
+    // Filter by status if provided
+    if (status && Object.values(WaveStatus).includes(status as WaveStatus)) {
+      waves = waves.filter((wave) => wave.status === status);
+    }
+
+    // Populate job details for each wave
+    const populatedWaves = await Promise.all(
+      waves.map(async (wave) => {
+        const job = await JobRepo.findById(wave.jobId.toString());
+        return {
+          ...wave,
+          job,
+        };
+      }),
+    );
+
+    new SuccessResponse('User waves retrieved successfully', {
+      waves: populatedWaves,
+    }).send(res);
+  }),
+);
+
 export default router;
