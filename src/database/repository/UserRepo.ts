@@ -73,6 +73,41 @@ async function findPublicProfileById(id: Types.ObjectId): Promise<User | null> {
   return UserModel.findOne({ _id: id, status: true }).lean().exec();
 }
 
+async function findUsersWithMatchingSkills(
+  skillIds: Types.ObjectId[],
+  excludeUserId: Types.ObjectId,
+): Promise<User[]> {
+  return UserModel.find({
+    $and: [
+      { _id: { $ne: excludeUserId } }, // Exclude the requesting user
+      { status: true },
+      {
+        $or: [
+          { skills: { $in: skillIds } },
+          { talentPoolPreferences: { $in: skillIds } },
+        ],
+      },
+    ],
+  })
+    .populate({
+      path: 'role',
+      match: { status: true },
+      select: { code: 1 },
+    })
+    .populate({
+      path: 'skills',
+      match: { status: true },
+      select: { name: 1 },
+    })
+    .populate({
+      path: 'talentPoolPreferences',
+      match: { status: true },
+      select: { name: 1 },
+    })
+    .lean<User[]>()
+    .exec();
+}
+
 async function create(
   user: User,
   accessTokenKey: string,
@@ -135,6 +170,7 @@ export default {
   findByEmail,
   findFieldsById,
   findPublicProfileById,
+  findUsersWithMatchingSkills,
   create,
   update,
   updateInfo,

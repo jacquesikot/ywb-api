@@ -48,7 +48,7 @@ async function updateStatusById(
     .exec();
 }
 
-function getSkillsFromUser(user: User): Skill[] {
+export function getSkillsFromUser(user: User): Skill[] {
   let skills: Skill[] = user.skills as any;
 
   if (user.role.code === RoleCode.BUSINESS && user.talentPoolPreferences)

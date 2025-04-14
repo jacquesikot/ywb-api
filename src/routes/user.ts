@@ -10,6 +10,7 @@ import { SuccessResponse } from '../core/ApiResponse';
 import KeystoreRepo from '../database/repository/KeystoreRepo';
 import SkillRepo from '../database/repository/SkillRepo'; // Import SkillRepo to fetch skill ObjectIds
 import UserRepo from '../database/repository/UserRepo';
+import { getSkillsFromUser } from '../database/repository/JobRepo';
 import asyncHandler from '../helpers/asyncHandler';
 import validator from '../helpers/validator';
 import schema from './access/schema';
@@ -294,6 +295,63 @@ router.put(
     new SuccessResponse('Password updated successfully', {
       tokens,
     }).send(res);
+  }),
+);
+
+/**
+ * @swagger
+ * /user/talents:
+ *   get:
+ *     summary: Get users with matching skills
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Users with matching skills retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       400:
+ *         description: Bad request - User not registered
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
+router.get(
+  '/talents',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const { _id } = req.user;
+    const userId = new Types.ObjectId(_id);
+
+    const user = await UserRepo.findPrivateProfileById(userId);
+    if (!user) throw new BadRequestError('User not registered');
+
+    // Get combined skills from user's skills and talentPoolPreferences
+    const userSkills = getSkillsFromUser(user);
+
+    // Extract skill IDs
+    const skillIds = userSkills.map((skill) => skill._id);
+
+    // Find users with matching skills
+    const matchingUsers = await UserRepo.findUsersWithMatchingSkills(
+      skillIds,
+      userId,
+    );
+
+    return new SuccessResponse(
+      'Talents retrieved successfully',
+      matchingUsers,
+    ).send(res);
   }),
 );
 
