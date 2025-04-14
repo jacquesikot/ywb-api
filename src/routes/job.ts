@@ -172,7 +172,7 @@ router.get(
     }
 
     if (hoursPerWeek) {
-      filter.hoursPerWeek = Number(hoursPerWeek);
+      filter['hoursPerWeek.min'] = Number(hoursPerWeek);
     }
 
     // Filter by skills array if provided (assuming skills are array of skill IDs)
@@ -351,8 +351,17 @@ router.use(roleAccess([RoleCode.BUSINESS, RoleCode.CLIENT]));
  *                     type: number
  *                     description: Budget amount
  *               hoursPerWeek:
- *                 type: number
- *                 description: Hours of work required per week
+ *                 type: object
+ *                 properties:
+ *                   value:
+ *                     type: string
+ *                     description: Text description of hours
+ *                   min:
+ *                     type: number
+ *                     description: Minimum hours per week
+ *                   max:
+ *                     type: number
+ *                     description: Maximum hours per week
  *               skills:
  *                 type: array
  *                 items:

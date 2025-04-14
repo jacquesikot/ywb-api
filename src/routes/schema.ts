@@ -31,7 +31,11 @@ export default {
     visibility: Joi.string()
       .valid(JobVisibility.PUBLIC, JobVisibility.PRIVATE)
       .default(JobVisibility.PUBLIC),
-    hoursPerWeek: Joi.number().min(1).max(168),
+    hoursPerWeek: Joi.object().keys({
+      value: Joi.string(),
+      min: Joi.number().min(1),
+      max: Joi.number().max(168),
+    }),
   }),
   createWave: Joi.object().keys({
     jobId: Joi.string().required(),

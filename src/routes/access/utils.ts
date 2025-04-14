@@ -7,7 +7,7 @@ export const enum AccessMode {
 }
 
 export async function getUserData(user: User) {
-  const fields = ['_id', 'name', 'role', 'profilePicUrl'];
+  const fields = ['_id', 'name', 'role', 'profilePicUrl', 'businessType'];
 
   // Include username if it exists
   if (user.username) fields.push('username');

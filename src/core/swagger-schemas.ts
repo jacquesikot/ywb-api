@@ -118,8 +118,17 @@
  *           type: string
  *           description: Expected timeline for job completion
  *         hoursPerWeek:
- *           type: number
- *           description: Hours of work required per week
+ *           type: object
+ *           properties:
+ *             value:
+ *               type: string
+ *               description: Text description of hours
+ *             min:
+ *               type: number
+ *               description: Minimum hours per week
+ *             max:
+ *               type: number
+ *               description: Maximum hours per week
  *         visibility:
  *           type: string
  *           enum: [PUBLIC, PRIVATE]

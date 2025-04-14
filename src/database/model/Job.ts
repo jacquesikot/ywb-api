@@ -50,7 +50,11 @@ export default interface Job {
     min?: number;
     max?: number;
   };
-  hoursPerWeek?: number;
+  hoursPerWeek?: {
+    value?: string;
+    min?: number;
+    max?: number;
+  };
   timeline: string;
   status: JobStatus;
   type: JobType;
@@ -135,7 +139,15 @@ const schema = new Schema<Job>(
       },
     },
     hoursPerWeek: {
-      type: Schema.Types.Number,
+      value: {
+        type: Schema.Types.String,
+      },
+      min: {
+        type: Schema.Types.Number,
+      },
+      max: {
+        type: Schema.Types.Number,
+      },
     },
     timeline: {
       type: Schema.Types.String,
