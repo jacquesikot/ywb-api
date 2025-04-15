@@ -24,6 +24,8 @@ export enum JobType {
 export enum BudgetType {
   FIXED = 'FIXED',
   HOURLY = 'HOURLY',
+  WEEKLY = 'WEEKLY',
+  MONTHLY = 'MONTHLY'
 }
 
 export enum JobVisibility {
