@@ -41,7 +41,7 @@ export default interface Job {
   category: string;
   skills: Skill[];
   waves: Types.ObjectId[];
-  locationPreference: LocationPreference;
+  locationPreference?: LocationPreference;
   resource?: string;
   additionalQuestions?: string[];
   images?: string[];
@@ -98,7 +98,7 @@ const schema = new Schema<Job>(
     locationPreference: {
       type: Schema.Types.String,
       enum: Object.values(LocationPreference),
-      required: true,
+      required: false,
     },
     resource: {
       type: Schema.Types.String,
