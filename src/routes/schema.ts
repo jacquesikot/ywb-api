@@ -40,7 +40,7 @@ export default {
       .default(JobVisibility.PUBLIC),
     hoursPerWeek: Joi.object().keys({
       value: Joi.string(),
-      min: Joi.number().min(1),
+      min: Joi.number().min(0),
       max: Joi.number().max(168),
     }),
   }),
