@@ -13,7 +13,14 @@ export default {
     category: Joi.string().required(),
     skills: Joi.array().items(Joi.string().required()).min(1).required(),
     budget: Joi.object().keys({
-      type: Joi.string().valid(BudgetType.HOURLY, BudgetType.FIXED).required(),
+      type: Joi.string()
+        .valid(
+          BudgetType.HOURLY,
+          BudgetType.FIXED,
+          BudgetType.WEEKLY,
+          BudgetType.MONTHLY,
+        )
+        .required(),
       value: Joi.number(),
       min: Joi.number(),
       max: Joi.number(),
