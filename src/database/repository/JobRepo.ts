@@ -66,6 +66,7 @@ async function findJobMatch(user: User): Promise<Job[]> {
     status: JobStatus.OPEN,
   })
     .populate('skills', { _id: 1, name: 1 })
+    .populate('user', { _id: 1, name: 1, email: 1, role: 1 })
     .lean()
     .exec();
 }
