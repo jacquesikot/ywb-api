@@ -181,9 +181,7 @@ router.get(
 
     const messages = await MessageRepo.findByChatId(chatId);
 
-    new SuccessResponse('Messages retrieved successfully', { messages }).send(
-      res,
-    );
+    new SuccessResponse('Messages retrieved successfully', messages).send(res);
   }),
 );
 
