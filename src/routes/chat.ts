@@ -160,7 +160,7 @@ router.get(
   asyncHandler(async (req: ProtectedRequest, res) => {
     const userId = req.user._id.toString();
     const chats = await ChatRepo.findByMemberId(userId);
-    new SuccessResponse('Chats retrieved successfully', { chats }).send(res);
+    new SuccessResponse('Chats retrieved successfully', chats).send(res);
   }),
 );
 

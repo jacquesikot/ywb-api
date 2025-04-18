@@ -1,4 +1,5 @@
 import Chat, { ChatModel } from '../model/Chat';
+import { MessageModel } from '../model/Message';
 
 async function findById(id: string): Promise<Chat | null> {
   return ChatModel.findById(id).lean().exec();
@@ -16,10 +17,31 @@ async function findByUserId(userId: string): Promise<Chat[]> {
   return ChatModel.find({ userId }).lean().exec();
 }
 
-async function findByMemberId(memberId: string): Promise<Chat[]> {
-  return ChatModel.find({ members: { $in: [memberId] } })
+async function findByMemberId(memberId: string): Promise<any[]> {
+  const chats = await ChatModel.find({ members: { $in: [memberId] } })
+    .populate('members')
+    .populate('ownerId')
     .lean()
     .exec();
+
+  // Fetch recent messages for each chat
+  const chatsWithMessages = await Promise.all(
+    chats.map(async (chat) => {
+      const recentMessages = await MessageModel.find({ chatId: chat._id })
+        .sort({ timestamp: -1 })
+        .limit(20)
+        .populate('userId')
+        .lean()
+        .exec();
+
+      return {
+        ...chat,
+        recentMessages,
+      };
+    }),
+  );
+
+  return chatsWithMessages;
 }
 
 async function create(chatData: Partial<Chat>): Promise<Chat> {
