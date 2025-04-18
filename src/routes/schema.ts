@@ -5,6 +5,7 @@ import {
   JobVisibility,
   LocationPreference,
 } from '../database/model/Job';
+import { WaveStatus } from '../database/model/Wave';
 
 export default {
   createJob: Joi.object().keys({
@@ -47,6 +48,11 @@ export default {
   createWave: Joi.object().keys({
     jobId: Joi.string().required(),
     freelancerId: Joi.string().optional(),
+  }),
+  updateWaveStatus: Joi.object().keys({
+    status: Joi.string()
+      .valid(WaveStatus.WAVED, WaveStatus.ACCEPTED, WaveStatus.REJECTED)
+      .required(),
   }),
   createChat: Joi.object().keys({
     receiverId: Joi.string().required(),

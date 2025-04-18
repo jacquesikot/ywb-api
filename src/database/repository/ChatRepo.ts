@@ -8,6 +8,10 @@ async function findByJobId(jobId: string): Promise<Chat[]> {
   return ChatModel.find({ jobId }).lean().exec();
 }
 
+async function findByWaveId(waveId: string): Promise<Chat | null> {
+  return ChatModel.findOne({ waveId }).lean().exec();
+}
+
 async function findByUserId(userId: string): Promise<Chat[]> {
   return ChatModel.find({ userId }).lean().exec();
 }
@@ -44,6 +48,7 @@ export default {
   findByJobId,
   findByUserId,
   findByMemberId,
+  findByWaveId,
   create,
   update,
   deleteById,
