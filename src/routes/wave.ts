@@ -80,24 +80,27 @@ router.post(
   '/create',
   validator(schema.createWave),
   asyncHandler(async (req: ProtectedRequest, res) => {
-    const { jobId, freelancerId } = req.body;
+    const { jobId } = req.body;
     const user = req.user;
 
-    const freelancerDetails = await UserRepo.findById(freelancerId);
+    const freelancerDetails = await UserRepo.findById(user._id);
 
     const job = await JobRepo.findById(jobId);
     if (!job) throw new NotFoundError('Job not found');
 
     const existingWave = await WaveRepo.findJobById(jobId);
     if (
-      existingWave.some((wave) => wave.freelancerId.toString === freelancerId)
+      existingWave.some(
+        (wave) => wave.freelancerId.toString() === user._id.toString(),
+      )
     ) {
       throw new BadRequestError('Wave already exist Job and freelancer');
     }
 
     const waveData = {
       jobId,
-      freelancerId,
+      job,
+      freelancerId: user._id,
       status: WaveStatus.WAVED,
     };
 
@@ -109,7 +112,7 @@ router.post(
       data: {
         waveId: wave._id,
         jobId: job._id,
-        freelancerId: freelancerId,
+        freelancerId: user._id,
       },
     });
 
@@ -117,8 +120,8 @@ router.post(
       const newChat = await ChatRepo.create({
         jobId,
         waveId: wave._id,
-        ownerId: freelancerId,
-        members: [freelancerId, user._id],
+        ownerId: user._id,
+        members: [user._id, job.user._id],
       });
       await MessageRepo.create({
         chatId: newChat._id,
@@ -193,9 +196,10 @@ router.get(
       }),
     );
 
-    new SuccessResponse('User waves retrieved successfully', {
-      waves: populatedWaves,
-    }).send(res);
+    new SuccessResponse(
+      'User waves retrieved successfully',
+      populatedWaves,
+    ).send(res);
   }),
 );
 

@@ -46,7 +46,7 @@ export default {
   }),
   createWave: Joi.object().keys({
     jobId: Joi.string().required(),
-    freelancerId: Joi.string().required(),
+    freelancerId: Joi.string().optional(),
   }),
   createChat: Joi.object().keys({
     receiverId: Joi.string().required(),
