@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import Wave, { WaveStatus, WaveModel } from '../model/Wave';
 
 async function findById(id: string): Promise<Wave | null> {
@@ -10,6 +11,29 @@ async function findJobById(jobId: string): Promise<Wave[]> {
 
 async function findFreelancerById(freelancerId: string): Promise<Wave[]> {
   return WaveModel.find({ freelancerId }).lean().exec();
+}
+
+async function findByJobOwnerId(userId: string): Promise<Wave[]> {
+  return WaveModel.aggregate([
+    {
+      $lookup: {
+        from: 'jobs',
+        localField: 'jobId',
+        foreignField: '_id',
+        as: 'job',
+      },
+    },
+    {
+      $match: {
+        'job.user': new Types.ObjectId(userId),
+      },
+    },
+    {
+      $project: {
+        job: 0, // Remove the job field from the result
+      },
+    },
+  ]).exec();
 }
 
 async function create(waveData: Partial<Wave>): Promise<Wave> {
@@ -43,6 +67,7 @@ export default {
   findById,
   findJobById,
   findFreelancerById,
+  findByJobOwnerId,
   create,
   deleteById,
   updateStatusById,

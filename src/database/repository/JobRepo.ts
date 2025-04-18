@@ -14,7 +14,10 @@ async function findByTitles(titles: string[]): Promise<Job[]> {
 }
 
 async function findById(id: string): Promise<Job | null> {
-  return JobModel.findById(id).lean().exec();
+  return JobModel.findById(id)
+    .populate('user', { _id: 1, name: 1, email: 1 })
+    .lean()
+    .exec();
 }
 
 async function create(jobData: Partial<Job>): Promise<Job> {

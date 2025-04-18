@@ -108,11 +108,12 @@ router.post(
 
     await NotificationRepo.create({
       type: NotificationType.NEW_WAVE,
-      message: 'New wave',
+      userId: job.user._id,
+      message: 'New wave from ' + user.name + ' for ' + job.title,
       data: {
         waveId: wave._id,
         jobId: job._id,
-        freelancerId: user._id,
+        userId: job.user._id.toString(),
       },
     });
 
@@ -178,7 +179,43 @@ router.get(
     const userId = req.user._id;
     const { status } = req.query;
 
-    let waves = await WaveRepo.findFreelancerById(userId.toString());
+    let mySentWaves = await WaveRepo.findFreelancerById(userId.toString());
+    let myReceivedWaves = await WaveRepo.findByJobOwnerId(userId.toString());
+
+    // Filter by status if provided
+    if (status && Object.values(WaveStatus).includes(status as WaveStatus)) {
+      mySentWaves = mySentWaves.filter((wave) => wave.status === status);
+      myReceivedWaves = myReceivedWaves.filter(
+        (wave) => wave.status === status,
+      );
+    }
+
+    // Populate job details for each wave
+    const populatedWaves = await Promise.all(
+      [...mySentWaves, ...myReceivedWaves].map(async (wave) => {
+        const job = await JobRepo.findById(wave.jobId.toString());
+        return {
+          ...wave,
+          job,
+        };
+      }),
+    );
+    console.log('🚀 ~ asyncHandler ~ populatedWaves:', populatedWaves);
+
+    new SuccessResponse(
+      'User waves retrieved successfully',
+      populatedWaves,
+    ).send(res);
+  }),
+);
+
+router.get(
+  '/job-owner',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const userId = req.user._id;
+    const { status } = req.query;
+
+    let waves = await WaveRepo.findByJobOwnerId(userId.toString());
 
     // Filter by status if provided
     if (status && Object.values(WaveStatus).includes(status as WaveStatus)) {
