@@ -100,3 +100,47 @@ export const verifyEmailVerificationToken = async (token: string) => {
     userId: keystore.client._id,
   };
 };
+
+export const generateResetPasswordToken = async (userId: Types.ObjectId) => {
+  const token = crypto.randomBytes(32).toString('hex');
+  const expires = new Date();
+  expires.setHours(expires.getHours() + 1); // Token expires in 1 hour
+
+  await KeystoreModel.updateOne(
+    { client: userId },
+    {
+      resetPasswordToken: token,
+      resetPasswordTokenExpires: expires,
+    },
+  );
+
+  return token;
+};
+
+export const verifyResetPasswordToken = async (token: string) => {
+  const keystore = await KeystoreModel.findOne({
+    resetPasswordToken: token,
+    resetPasswordTokenExpires: { $gt: new Date() },
+  }).exec();
+
+  if (!keystore) {
+    throw new Error('Invalid or expired reset password token');
+  }
+
+  return {
+    isTokenVerified: true,
+    userId: keystore.client,
+  };
+};
+
+export const clearResetPasswordToken = async (token: string) => {
+  const keystore = await KeystoreModel.findOne({
+    resetPasswordToken: token,
+  });
+
+  if (keystore) {
+    keystore.resetPasswordToken = undefined;
+    keystore.resetPasswordTokenExpires = undefined;
+    await keystore.save();
+  }
+};

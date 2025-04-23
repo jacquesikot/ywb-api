@@ -12,6 +12,8 @@ export default interface Keystore {
   status?: boolean;
   emailVerificationToken?: string;
   emailVerificationTokenExpires?: Date;
+  resetPasswordToken?: string;
+  resetPasswordTokenExpires?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -42,6 +44,14 @@ const schema = new Schema<Keystore>(
       required: false,
     },
     emailVerificationTokenExpires: {
+      type: Schema.Types.Date,
+      required: false,
+    },
+    resetPasswordToken: {
+      type: Schema.Types.String,
+      required: false,
+    },
+    resetPasswordTokenExpires: {
       type: Schema.Types.Date,
       required: false,
     },

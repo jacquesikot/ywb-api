@@ -6,6 +6,8 @@ import login from './access/login';
 import logout from './access/logout';
 import signup from './access/signup';
 import verifyEmail from './access/verifyEmail';
+import forgotPassword from './access/forgotPassword';
+import resetPassword from './access/resetPassword';
 import adminApiKey from './admin/adminApiKey';
 import adminKYC from './admin/adminKYC';
 import role from './admin/role';
@@ -21,6 +23,7 @@ import user from './user';
 import wave from './wave';
 
 const router = express.Router();
+router.use('/reset-password', resetPassword);
 
 // Apply the API Key middleware globally
 router.use(apiKey);
@@ -29,6 +32,7 @@ router.use(apiKey);
 router.use('/signup', permission(Permission.GENERAL), signup);
 router.use('/login', permission(Permission.GENERAL), login);
 router.use('/verify-email', permission(Permission.GENERAL), verifyEmail);
+router.use('/forgot-password', permission(Permission.GENERAL), forgotPassword);
 
 // Protected routes for general users
 router.use('/logout', permission(Permission.GENERAL), logout);

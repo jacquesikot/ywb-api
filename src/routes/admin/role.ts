@@ -9,6 +9,35 @@ import schema from './schema';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /admin/role:
+ *   post:
+ *     summary: Create a new role
+ *     tags: [Admin, Role]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 description: Role code
+ *     responses:
+ *       200:
+ *         description: Role created successfully
+ *       400:
+ *         description: Role already exists
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.post(
   '/',
   validator(schema.createRole),
@@ -20,6 +49,22 @@ router.post(
       new SuccessResponse('Role Created Successfully', newRole).send(res);
   }),
 );
+
+/**
+ * @swagger
+ * /admin/role:
+ *   get:
+ *     summary: Get all roles
+ *     tags: [Admin, Role]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of roles retrieved successfully
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.get(
   '/',
   asyncHandler(async (req: express.Request, res: express.Response) => {
@@ -28,6 +73,30 @@ router.get(
   }),
 );
 
+/**
+ * @swagger
+ * /admin/role/{id}:
+ *   delete:
+ *     summary: Delete a role
+ *     tags: [Admin, Role]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Role ID
+ *     responses:
+ *       200:
+ *         description: Role deleted successfully
+ *       400:
+ *         description: Role not found
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.delete(
   '/:id',
   asyncHandler(async (req: RoleRequest, res) => {

@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express, { NextFunction, Request, Response, Router } from 'express';
 import swaggerUi from 'swagger-ui-express';
+import path from 'path';
 import { corsUrl, environment } from './config';
 import {
   ApiError,
@@ -24,6 +25,11 @@ app.use(
   express.urlencoded({ limit: '10mb', extended: true, parameterLimit: 50000 }),
 );
 app.use(cors({ origin: corsUrl, optionsSuccessStatus: 200 }));
+
+// View engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Swagger Documentation
 // Make sure these routes are defined before any route with api key middleware

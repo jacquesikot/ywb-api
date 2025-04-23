@@ -22,11 +22,13 @@ export default {
     .unknown(true),
   signup: Joi.object().keys({
     name: Joi.string().required().min(3),
-    role: Joi.string().required(),
+    role: Joi.string()
+      .valid(...Object.values(RoleCode))
+      .required(),
     username: Joi.string().optional().min(3),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(6),
-    profilePicUrl: Joi.string().optional().uri(),
+    profilePicUrl: Joi.string().optional(),
   }),
   updateUser: Joi.object({
     name: Joi.string().optional(),
@@ -77,5 +79,13 @@ export default {
   updatePassword: Joi.object().keys({
     currentPassword: Joi.string().required(),
     newPassword: Joi.string().min(8).required(),
+  }),
+  forgotPassword: Joi.object().keys({
+    email: Joi.string().required().email(),
+  }),
+  resetPassword: Joi.object().keys({
+    token: Joi.string().required().min(1),
+    password: Joi.string().required().min(6),
+    confirmPassword: Joi.string().required().min(6),
   }),
 };
