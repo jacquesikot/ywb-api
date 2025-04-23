@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
+import { db } from '../config';
 import Logger from '../core/Logger';
-import { db, environment } from '../config';
 import { ApiKeyModel, DOCUMENT_NAME } from './model/ApiKey';
 
 // Seed document

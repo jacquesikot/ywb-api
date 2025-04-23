@@ -16,6 +16,7 @@ import job from './job';
 import kyc from './kyc';
 import message from './message';
 import notification from './notification';
+import subscription from './subscription';
 import user from './user';
 import wave from './wave';
 
@@ -39,6 +40,7 @@ router.use('/notification', permission(Permission.GENERAL), notification);
 router.use('/dashboard', permission(Permission.GENERAL), dashboard);
 router.use('/job', permission(Permission.GENERAL), job);
 router.use('/kyc', permission(Permission.GENERAL), kyc);
+router.use('/subscription', permission(Permission.GENERAL), subscription);
 
 // Admin routes
 router.use('/admin/apiKey', permission(Permission.ADMIN), adminApiKey);

@@ -99,7 +99,6 @@ const schema = new Schema<User>(
       type: Schema.Types.String,
       trim: true,
       maxlength: 15,
-      unique: true,
     },
     profilePicUrl: {
       type: Schema.Types.String,

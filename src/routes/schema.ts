@@ -5,6 +5,10 @@ import {
   JobVisibility,
   LocationPreference,
 } from '../database/model/Job';
+import {
+  SubscriptionInterval,
+  SubscriptionPlan,
+} from '../database/model/Subscription';
 import { WaveStatus } from '../database/model/Wave';
 
 export default {
@@ -90,4 +94,17 @@ export default {
     ownershipAndControlInformation: Joi.string(),
     governmentIssuedId: Joi.string(),
   }),
+  subscription: {
+    create: Joi.object().keys({
+      plan: Joi.string()
+        .valid(...Object.values(SubscriptionPlan))
+        .required(),
+      interval: Joi.string()
+        .valid(...Object.values(SubscriptionInterval))
+        .required(),
+    }),
+    id: Joi.object().keys({
+      id: Joi.string().required().min(24).max(24),
+    }),
+  },
 };
