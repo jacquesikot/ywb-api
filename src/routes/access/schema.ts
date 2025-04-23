@@ -25,7 +25,6 @@ export default {
     role: Joi.string()
       .valid(...Object.values(RoleCode))
       .required(),
-    username: Joi.string().optional().min(3),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(6),
     profilePicUrl: Joi.string().optional(),
@@ -47,7 +46,6 @@ export default {
       address: Joi.string().optional(),
     }).optional(),
     companyRole: Joi.string().optional(),
-    username: Joi.string().optional(),
     skills: Joi.array().items(Joi.string()).optional(),
     experienceLevel: Joi.string()
       .valid(

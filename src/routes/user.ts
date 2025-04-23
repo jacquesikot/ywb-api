@@ -106,7 +106,6 @@ router.put(
     if (!user) throw new BadRequestError('User not registered');
 
     if (req.body.name) user.name = req.body.name;
-    if (req.body.username) user.username = req.body.username;
     if (req.body.profilePicUrl) user.profilePicUrl = req.body.profilePicUrl;
     if (req.body.phone) user.phone = req.body.phone;
     if (req.body.bio) user.bio = req.body.bio;

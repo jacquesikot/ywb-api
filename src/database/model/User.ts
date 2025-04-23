@@ -46,7 +46,6 @@ export enum PlanType {
 export default interface User {
   _id: Types.ObjectId;
   name: string;
-  username?: string;
   profilePicUrl?: string;
   email: string;
   password: string;
@@ -87,12 +86,6 @@ const schema = new Schema<User>(
     name: {
       type: Schema.Types.String,
       trim: true,
-      maxlength: 200,
-    },
-    username: {
-      type: Schema.Types.String,
-      trim: true,
-      unique: true,
       maxlength: 200,
     },
     phone: {
