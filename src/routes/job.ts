@@ -413,4 +413,69 @@ router.post(
   }),
 );
 
+/**
+ * @swagger
+ * /job/my-jobs:
+ *   get:
+ *     summary: Get jobs for the current user with optional status filtering
+ *     tags: [Jobs]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: completed
+ *         schema:
+ *           type: boolean
+ *         description: Filter jobs by completion status. If true, returns only CLOSED jobs. If false, returns OPEN and IN_PROGRESS jobs.
+ *     responses:
+ *       200:
+ *         description: User jobs fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     jobs:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *       400:
+ *         description: Bad request - User not registered
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
+router.get(
+  '/my-jobs',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const { _id } = req.user;
+    const userId = new Types.ObjectId(_id);
+
+    const { completed } = req.query;
+    let statusFilter: JobStatus | JobStatus[] | undefined;
+
+    // Set filter based on the 'completed' query parameter
+    if (completed !== undefined) {
+      if (completed === 'true') {
+        statusFilter = JobStatus.CLOSED;
+      } else {
+        statusFilter = [JobStatus.OPEN, JobStatus.IN_PROGRESS];
+      }
+    }
+
+    const jobs = await JobRepo.findByUserId(userId, statusFilter);
+
+    new SuccessResponse('User jobs fetched successfully', {
+      jobs,
+    }).send(res);
+  }),
+);
+
 export default router;

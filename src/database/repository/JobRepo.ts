@@ -2,6 +2,7 @@ import Job, { JobModel, JobStatus } from '../model/Job';
 import { RoleCode } from '../model/Role';
 import Skill from '../model/Skill';
 import User from '../model/User';
+import { Types } from 'mongoose';
 
 async function findByTitle(title: string): Promise<Job | null> {
   return JobModel.findOne({ title: title, status: 'open' }).lean().exec();
@@ -74,6 +75,28 @@ async function findJobMatch(user: User): Promise<Job[]> {
     .exec();
 }
 
+async function findByUserId(
+  userId: Types.ObjectId,
+  statusFilter?: JobStatus | JobStatus[],
+): Promise<Job[]> {
+  const filter: any = { user: userId };
+
+  if (statusFilter) {
+    if (Array.isArray(statusFilter)) {
+      filter.status = { $in: statusFilter };
+    } else {
+      filter.status = statusFilter;
+    }
+  }
+
+  return JobModel.find(filter)
+    .populate('skills', { _id: 1, name: 1 })
+    .populate('user', { _id: 1, name: 1, email: 1, role: 1 })
+    .sort({ createdAt: -1 })
+    .lean()
+    .exec();
+}
+
 export default {
   findByTitle,
   findByTitles,
@@ -83,4 +106,5 @@ export default {
   findAll,
   updateStatusById,
   findJobMatch,
+  findByUserId,
 };
