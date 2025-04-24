@@ -84,6 +84,5 @@ export default {
   resetPassword: Joi.object().keys({
     token: Joi.string().required().min(1),
     password: Joi.string().required().min(6),
-    confirmPassword: Joi.string().required().min(6),
   }),
 };
