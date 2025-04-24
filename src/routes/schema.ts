@@ -107,4 +107,12 @@ export default {
       id: Joi.string().required().min(24).max(24),
     }),
   },
+  favorite: {
+    add: Joi.object().keys({
+      jobId: Joi.string().required(),
+    }),
+    remove: Joi.object().keys({
+      jobId: Joi.string().required(),
+    }),
+  },
 };
