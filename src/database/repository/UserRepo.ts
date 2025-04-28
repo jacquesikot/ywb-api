@@ -163,6 +163,40 @@ async function updateInfo(user: User): Promise<any> {
     .exec();
 }
 
+async function createGoogleUser({
+  name,
+  email,
+  profilePicUrl,
+  roleCode,
+}: {
+  name: string;
+  email: string;
+  profilePicUrl?: string;
+  roleCode: string;
+}) {
+  const role = await RoleModel.findOne({ code: roleCode })
+    .select('_id code')
+    .lean()
+    .exec();
+  if (!role) {
+    throw new InternalError('Role must be defined');
+  }
+  const now = new Date();
+  const user = await UserModel.create({
+    name,
+    email,
+    profilePicUrl,
+    verified: true,
+    role: role._id,
+    status: true,
+    createdAt: now,
+    updatedAt: now,
+    plan: 'FREE',
+    planType: 'MONTHLY',
+  });
+  return user.toObject();
+}
+
 export default {
   exists,
   findPrivateProfileById,
@@ -172,6 +206,7 @@ export default {
   findPublicProfileById,
   findUsersWithMatchingSkills,
   create,
+  createGoogleUser,
   update,
   updateInfo,
 };

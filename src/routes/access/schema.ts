@@ -8,6 +8,12 @@ import {
   PreferredRate,
 } from '../../database/model/User';
 export default {
+  google: Joi.object().keys({
+    idToken: Joi.string().required(),
+    roleCode: Joi.string()
+      .valid(...Object.values(RoleCode))
+      .required(),
+  }),
   credential: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(6),
