@@ -246,6 +246,82 @@ router.get(
 
 /**
  * @swagger
+ * /job/my-jobs:
+ *   get:
+ *     summary: Get jobs for the current user with optional status filtering
+ *     tags: [Jobs]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [open, closed, inProgress]
+ *         description: |
+ *           Filter jobs by status. One of: open, closed, inProgress. If omitted, returns all jobs.
+ *     responses:
+ *       200:
+ *         description: User jobs fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     jobs:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *       400:
+ *         description: Bad request - User not registered
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
+router.get(
+  '/my-jobs',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const { _id } = req.user;
+    const userId = new Types.ObjectId(_id);
+
+    const { status } = req.query;
+    let statusFilter: JobStatus | JobStatus[] | undefined;
+
+    if (typeof status === 'string') {
+      switch (status) {
+        case 'open':
+          statusFilter = JobStatus.OPEN;
+          break;
+        case 'closed':
+          statusFilter = JobStatus.CLOSED;
+          break;
+        case 'inProgress':
+          statusFilter = JobStatus.IN_PROGRESS;
+          break;
+        default:
+          throw new BadRequestError(
+            'Invalid status parameter. Allowed values: open, closed, inProgress',
+          );
+      }
+    }
+
+    const jobs = await JobRepo.findByUserId(userId, statusFilter);
+
+    new SuccessResponse('User jobs fetched successfully', {
+      jobs,
+    }).send(res);
+  }),
+);
+
+/**
+ * @swagger
  * /job/{jobId}:
  *   get:
  *     summary: Get job details by ID
@@ -409,82 +485,6 @@ router.post(
     });
     new SuccessResponse('Job created successfully', {
       job,
-    }).send(res);
-  }),
-);
-
-/**
- * @swagger
- * /job/my-jobs:
- *   get:
- *     summary: Get jobs for the current user with optional status filtering
- *     tags: [Jobs]
- *     security:
- *       - apiKey: []
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [open, closed, inProgress]
- *         description: |
- *           Filter jobs by status. One of: open, closed, inProgress. If omitted, returns all jobs.
- *     responses:
- *       200:
- *         description: User jobs fetched successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 statusCode:
- *                   type: string
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     jobs:
- *                       type: array
- *                       items:
- *                         type: object
- *       400:
- *         description: Bad request - User not registered
- *       401:
- *         description: Unauthorized - Invalid token
- */
-router.get(
-  '/my-jobs',
-  asyncHandler(async (req: ProtectedRequest, res) => {
-    const { _id } = req.user;
-    const userId = new Types.ObjectId(_id);
-
-    const { status } = req.query;
-    let statusFilter: JobStatus | JobStatus[] | undefined;
-
-    if (typeof status === 'string') {
-      switch (status) {
-        case 'open':
-          statusFilter = JobStatus.OPEN;
-          break;
-        case 'closed':
-          statusFilter = JobStatus.CLOSED;
-          break;
-        case 'inProgress':
-          statusFilter = JobStatus.IN_PROGRESS;
-          break;
-        default:
-          throw new BadRequestError(
-            'Invalid status parameter. Allowed values: open, closed, inProgress',
-          );
-      }
-    }
-
-    const jobs = await JobRepo.findByUserId(userId, statusFilter);
-
-    new SuccessResponse('User jobs fetched successfully', {
-      jobs,
     }).send(res);
   }),
 );
