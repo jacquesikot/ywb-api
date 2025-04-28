@@ -424,10 +424,12 @@ router.post(
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: completed
+ *         name: status
  *         schema:
- *           type: boolean
- *         description: Filter jobs by completion status. If true, returns only CLOSED jobs. If false, returns OPEN and IN_PROGRESS jobs.
+ *           type: string
+ *           enum: [open, closed, inProgress]
+ *         description: |
+ *           Filter jobs by status. One of: open, closed, inProgress. If omitted, returns all jobs.
  *     responses:
  *       200:
  *         description: User jobs fetched successfully
@@ -458,15 +460,24 @@ router.get(
     const { _id } = req.user;
     const userId = new Types.ObjectId(_id);
 
-    const { completed } = req.query;
+    const { status } = req.query;
     let statusFilter: JobStatus | JobStatus[] | undefined;
 
-    // Set filter based on the 'completed' query parameter
-    if (completed !== undefined) {
-      if (completed === 'true') {
-        statusFilter = JobStatus.CLOSED;
-      } else {
-        statusFilter = [JobStatus.OPEN, JobStatus.IN_PROGRESS];
+    if (typeof status === 'string') {
+      switch (status) {
+        case 'open':
+          statusFilter = JobStatus.OPEN;
+          break;
+        case 'closed':
+          statusFilter = JobStatus.CLOSED;
+          break;
+        case 'inProgress':
+          statusFilter = JobStatus.IN_PROGRESS;
+          break;
+        default:
+          throw new BadRequestError(
+            'Invalid status parameter. Allowed values: open, closed, inProgress',
+          );
       }
     }
 
