@@ -93,10 +93,12 @@ const router = express.Router();
  *                 error:
  *                   type: string
  */
-// Create education
 router.post('/', async (req: AuthRequest, res: Response) => {
   try {
-    const education = await EducationRepo.create({ ...req.body, user: req.user._id });
+    const education = await EducationRepo.create({
+      ...req.body,
+      user: req.user._id,
+    });
     res.status(201).json(education);
   } catch (err: unknown) {
     res.status(400).json({ error: (err as Error).message });
@@ -131,7 +133,6 @@ router.post('/', async (req: AuthRequest, res: Response) => {
  *                 error:
  *                   type: string
  */
-// Get all education records for a user
 router.get('/', async (req: AuthRequest, res: Response) => {
   try {
     const educations = await EducationRepo.findByUser(req.user._id);
@@ -189,10 +190,12 @@ router.get('/', async (req: AuthRequest, res: Response) => {
  *                 error:
  *                   type: string
  */
-// Update education by ID
 router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
-    const updated = await EducationRepo.updateById(new Types.ObjectId(req.params.id), req.body);
+    const updated = await EducationRepo.updateById(
+      new Types.ObjectId(req.params.id),
+      req.body,
+    );
     if (!updated) return res.status(404).json({ error: 'Education not found' });
     res.json(updated);
   } catch (err: unknown) {
@@ -245,10 +248,11 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
  *                 error:
  *                   type: string
  */
-// Delete education by ID
 router.delete('/:id', async (req: AuthRequest, res: Response) => {
   try {
-    const deleted = await EducationRepo.deleteById(new Types.ObjectId(req.params.id));
+    const deleted = await EducationRepo.deleteById(
+      new Types.ObjectId(req.params.id),
+    );
     if (!deleted) return res.status(404).json({ error: 'Education not found' });
     res.json({ success: true });
   } catch (err: unknown) {
