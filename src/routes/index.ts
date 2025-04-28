@@ -44,6 +44,7 @@ router.use('/message', permission(Permission.GENERAL), message);
 router.use('/notification', permission(Permission.GENERAL), notification);
 router.use('/dashboard', permission(Permission.GENERAL), dashboard);
 router.use('/job', permission(Permission.GENERAL), job);
+router.use('/education', permission(Permission.GENERAL), require('./education').default);
 router.use('/favorite', permission(Permission.GENERAL), favorite);
 router.use('/kyc', permission(Permission.GENERAL), kyc);
 router.use('/subscription', permission(Permission.GENERAL), subscription);
