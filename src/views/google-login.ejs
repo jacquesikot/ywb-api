@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Login Test</title>
+  <link rel="stylesheet" href="/css/google-login.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Test Google Login</h1>
+    
+    <div class="form-group">
+      <div id="g_id_onload"
+         data-client_id="<%= googleClientId %>"
+         data-callback="handleCredentialResponse">
+      </div>
+      <div class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+      </div>
+    </div>
+    
+    <div class="manual-login">
+      <p>Or use your Google ID token manually:</p>
+      <div class="form-group">
+        <label for="idToken">Google ID Token</label>
+        <textarea id="idToken" rows="5" placeholder="Paste your Google ID token here"></textarea>
+      </div>
+      <button id="manualLoginBtn">Login with Token</button>
+    </div>
+
+    <div id="responseSection" class="response-section" style="display: none;">
+      <h2>API Response:</h2>
+      <pre id="responseData"></pre>
+    </div>
+
+    <div id="errorSection" class="error-message" style="display: none;">
+      <h2>Error:</h2>
+      <pre id="errorData"></pre>
+    </div>
+
+    <% if (typeof debugInfo !== 'undefined') { %>
+    <div class="debug-section">
+      <h3>Debug Information:</h3>
+      <p>Client ID configured: <%= debugInfo.hasClientId ? 'Yes' : 'No' %></p>
+      <p>Client ID length: <%= debugInfo.clientIdLength %></p>
+      <p><strong>Note:</strong> If the client ID is missing or empty, you need to set the GOOGLE_CLIENT_ID environment variable.</p>
+    </div>
+    <% } %>
+  </div>
+
+  <script>
+    // Use the Google client ID provided by the server
+    const googleClientId = "<%= googleClientId %>";
+    
+    // Update client ID in Google Sign-In button
+    document.addEventListener('DOMContentLoaded', () => {
+      const gIdOnload = document.getElementById('g_id_onload');
+      if (gIdOnload) {
+        gIdOnload.setAttribute('data-client_id', googleClientId);
+      }
+    });
+
+    // Handle the Google Sign-In response
+    function handleCredentialResponse(response) {
+      if (response.credential) {
+        const idToken = response.credential;
+        document.getElementById('idToken').value = idToken;
+        callLoginApi(idToken);
+      }
+    }
+
+    // Call login API with the ID token
+    async function callLoginApi(idToken) {
+      try {
+        const response = await fetch('/login/google', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ idToken, roleCode: 'CLIENT' }),
+        });
+
+        const responseData = await response.json();
+        
+        // Display the response data
+        const responseSection = document.getElementById('responseSection');
+        const responseDataElem = document.getElementById('responseData');
+        
+        responseSection.style.display = 'block';
+        responseDataElem.textContent = JSON.stringify(responseData, null, 2);
+        
+        document.getElementById('errorSection').style.display = 'none';
+      } catch (error) {
+        // Display any errors
+        const errorSection = document.getElementById('errorSection');
+        const errorDataElem = document.getElementById('errorData');
+        
+        errorSection.style.display = 'block';
+        errorDataElem.textContent = error.toString();
+      }
+    }
+
+    // Handle manual token submission
+    document.getElementById('manualLoginBtn').addEventListener('click', function() {
+      const idToken = document.getElementById('idToken').value.trim();
+      if (idToken) {
+        callLoginApi(idToken);
+      } else {
+        alert('Please enter a Google ID token');
+      }
+    });
+  </script>
+</body>
+</html>

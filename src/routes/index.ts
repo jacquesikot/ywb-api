@@ -8,6 +8,7 @@ import signup from './access/signup';
 import verifyEmail from './access/verifyEmail';
 import forgotPassword from './access/forgotPassword';
 import resetPassword from './access/resetPassword';
+import googleLoginTest from './access/googleLoginTest';
 import adminApiKey from './admin/adminApiKey';
 import adminKYC from './admin/adminKYC';
 import role from './admin/role';
@@ -25,13 +26,14 @@ import wave from './wave';
 
 const router = express.Router();
 router.use('/reset-password', resetPassword);
+router.use('/test-google-login', googleLoginTest);
+router.use('/login', login);
 
 // Apply the API Key middleware globally
 router.use(apiKey);
 
 // Public routes
 router.use('/signup', permission(Permission.GENERAL), signup);
-router.use('/login', permission(Permission.GENERAL), login);
 router.use('/verify-email', permission(Permission.GENERAL), verifyEmail);
 router.use('/forgot-password', permission(Permission.GENERAL), forgotPassword);
 
@@ -44,7 +46,11 @@ router.use('/message', permission(Permission.GENERAL), message);
 router.use('/notification', permission(Permission.GENERAL), notification);
 router.use('/dashboard', permission(Permission.GENERAL), dashboard);
 router.use('/job', permission(Permission.GENERAL), job);
-router.use('/education', permission(Permission.GENERAL), require('./education').default);
+router.use(
+  '/education',
+  permission(Permission.GENERAL),
+  require('./education').default,
+);
 router.use('/favorite', permission(Permission.GENERAL), favorite);
 router.use('/kyc', permission(Permission.GENERAL), kyc);
 router.use('/subscription', permission(Permission.GENERAL), subscription);
