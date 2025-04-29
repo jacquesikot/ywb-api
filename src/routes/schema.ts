@@ -115,4 +115,26 @@ export default {
       jobId: Joi.string().required(),
     }),
   },
+  education: {
+    create: Joi.object().keys({
+      degree: Joi.string().required(),
+      fieldOfStudy: Joi.string().required(),
+      institutionName: Joi.string().required(),
+      location: Joi.string(),
+      institutionWebsite: Joi.string(),
+      startYear: Joi.number().required(),
+      endYear: Joi.number(),
+      description: Joi.string(),
+    }),
+    update: Joi.object().keys({
+      degree: Joi.string(),
+      fieldOfStudy: Joi.string(),
+      institutionName: Joi.string(),
+      location: Joi.string(),
+      institutionWebsite: Joi.string(),
+      startYear: Joi.number(),
+      endYear: Joi.number(),
+      description: Joi.string(),
+    }),
+  },
 };
