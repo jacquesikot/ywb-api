@@ -209,6 +209,41 @@ router.get(
   }),
 );
 
+/**
+ * @swagger
+ * /wave/job-owner:
+ *   get:
+ *     summary: Get all waves where the authenticated user is the job owner
+ *     tags: [Waves]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [waved, accepted, rejected]
+ *         description: Filter waves by status (optional)
+ *     responses:
+ *       200:
+ *         description: List of job owner's waves retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Wave'
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
 router.get(
   '/job-owner',
   asyncHandler(async (req: ProtectedRequest, res) => {
@@ -388,6 +423,123 @@ router.put(
     new SuccessResponse('Wave status updated successfully', {
       wave: updatedWave,
     }).send(res);
+  }),
+);
+
+/**
+ * @swagger
+ * /wave/applicants:
+ *   get:
+ *     summary: Get unique users who have sent waves to the authenticated user
+ *     tags: [Waves]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [waved, accepted, rejected]
+ *         description: Filter by wave status (optional)
+ *     responses:
+ *       200:
+ *         description: List of unique users who have sent waves retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       user:
+ *                         $ref: '#/components/schemas/User'
+ *                       waves:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             wave:
+ *                               $ref: '#/components/schemas/Wave'
+ *                             job:
+ *                               $ref: '#/components/schemas/Job'
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
+router.get(
+  '/applicants',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const userId = req.user._id;
+    const { status } = req.query;
+
+    // Find all waves where the authenticated user is the job owner
+    let waves = await WaveRepo.findByJobOwnerId(userId.toString());
+
+    // Filter by status if provided
+    if (status && Object.values(WaveStatus).includes(status as WaveStatus)) {
+      waves = waves.filter((wave) => wave.status === status);
+    }
+
+    // Group waves by freelancer ID
+    interface WavesByFreelancerId {
+      [key: string]: any[];
+    }
+    
+    const wavesByFreelancerId: WavesByFreelancerId = {};
+    waves.forEach((wave: any) => {
+      const freelancerId = wave.freelancerId.toString();
+      if (!wavesByFreelancerId[freelancerId]) {
+        wavesByFreelancerId[freelancerId] = [];
+      }
+      wavesByFreelancerId[freelancerId].push(wave);
+    });
+    
+    // Get unique applicant details with their associated waves and jobs
+    const uniqueApplicants = await Promise.all(
+      Object.entries(wavesByFreelancerId).map(async ([freelancerIdStr, userWaves]: [string, any[]]) => {
+        // Get freelancer (applicant) details - use original ObjectId from one of the waves
+        const user = await UserRepo.findById(userWaves[0].freelancerId);
+        if (!user) return null;
+        
+        // Get job details for each wave
+        const wavesWithJobs = await Promise.all(
+          userWaves.map(async (wave: any) => {
+            const job = await JobRepo.findById(wave.jobId.toString());
+            if (!job) return null;
+            
+            return {
+              wave,
+              job,
+            };
+          })
+        );
+        
+        // Filter out any null entries (where job wasn't found)
+        const validWaves = wavesWithJobs.filter((item: any) => item !== null);
+
+        return {
+          user,
+          waves: validWaves,
+        };
+      }),
+    );
+
+    // Filter out any null entries (where user wasn't found)
+    const validApplicants = uniqueApplicants.filter(
+      (applicant) => applicant !== null,
+    );
+
+    new SuccessResponse(
+      'Unique wave applicants retrieved successfully',
+      validApplicants,
+    ).send(res);
   }),
 );
 
