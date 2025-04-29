@@ -19,6 +19,7 @@ import job from './job';
 import kyc from './kyc';
 import message from './message';
 import notification from './notification';
+import project from './project';
 import subscription from './subscription';
 import user from './user';
 import wave from './wave';
@@ -47,6 +48,7 @@ router.use('/job', permission(Permission.GENERAL), job);
 router.use('/education', permission(Permission.GENERAL), require('./education').default);
 router.use('/favorite', permission(Permission.GENERAL), favorite);
 router.use('/kyc', permission(Permission.GENERAL), kyc);
+router.use('/project', permission(Permission.GENERAL), project);
 router.use('/subscription', permission(Permission.GENERAL), subscription);
 
 // Admin routes

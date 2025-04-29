@@ -137,4 +137,20 @@ export default {
       description: Joi.string(),
     }),
   },
+  project: {
+    create: Joi.object().keys({
+      title: Joi.string().required().min(3).max(100),
+      description: Joi.string().required().min(5),
+      tags: Joi.array().items(Joi.string()).required().min(1),
+      thumbnail: Joi.string().optional(),
+      images: Joi.array().items(Joi.string()).optional(),
+    }),
+    update: Joi.object().keys({
+      title: Joi.string().min(3).max(100),
+      description: Joi.string().min(10),
+      tags: Joi.array().items(Joi.string()),
+      thumbnail: Joi.string(),
+      images: Joi.array().items(Joi.string()),
+    }),
+  },
 };
