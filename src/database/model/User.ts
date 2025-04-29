@@ -11,9 +11,10 @@ export enum ExperienceLevel {
   EXPERT = 'EXPERT',
 }
 export enum AvailabilityStatus {
-  AVAILABLE = 'AVAILABLE',
-  BUSY = 'BUSY',
-  AWAY = 'AWAY',
+  FULLTIME = 'FULLTIME',
+  CONTRACT = 'CONTRACT',
+  REMOTE = 'REMOTE',
+  HYBRID = 'HYBRID',
 }
 export interface Availability {
   status: AvailabilityStatus;

@@ -82,9 +82,10 @@ router.use(authentication);
  *                   status:
  *                     type: string
  *                     enum:
- *                       - AVAILABLE
- *                       - AWAY
- *                       - BUSY
+ *                       - FULLTIME
+ *                       - CONTRACT
+ *                       - REMOTE
+ *                       - HYBRID
  *                   hoursPerWeek:
  *                     type: string
  *               companyName:
