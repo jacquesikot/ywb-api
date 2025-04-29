@@ -26,6 +26,7 @@ router.use(authentication);
  *     summary: Update user profile
  *     tags: [User]
  *     security:
+ *       - apiKey: []
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
@@ -45,7 +46,18 @@ router.use(authentication);
  *               bio:
  *                 type: string
  *               location:
- *                 type: string
+ *                 type: object
+ *                 properties:
+ *                   country:
+ *                     type: string
+ *                   state:
+ *                     type: string
+ *                   city:
+ *                     type: string
+ *                   address:
+ *                     type: string
+ *                   zipCode:
+ *                     type: string
  *               companyRole:
  *                 type: string
  *               skills:
@@ -65,7 +77,16 @@ router.use(authentication);
  *               preferredRate:
  *                 type: number
  *               availability:
- *                 type: string
+ *                 type: object
+ *                 properties:
+ *                   status:
+ *                     type: string
+ *                     enum:
+ *                       - AVAILABLE
+ *                       - AWAY
+ *                       - BUSY
+ *                   hoursPerWeek:
+ *                     type: string
  *               companyName:
  *                 type: string
  *               industry:
@@ -160,6 +181,7 @@ router.put(
  *     summary: Get user profile
  *     tags: [User]
  *     security:
+ *       - apiKey: []
  *       - bearerAuth: []
  *     responses:
  *       200:

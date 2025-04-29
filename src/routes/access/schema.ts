@@ -1,12 +1,13 @@
 import Joi from 'joi';
-import { JoiAuthBearer } from '../../helpers/validator';
 import { RoleCode } from '../../database/model/Role';
 import {
-  Availability,
+  AvailabilityStatus,
   BusinessType,
   ExperienceLevel,
   PreferredRate,
 } from '../../database/model/User';
+import { JoiAuthBearer } from '../../helpers/validator';
+
 export default {
   google: Joi.object().keys({
     idToken: Joi.string().required(),
@@ -50,6 +51,7 @@ export default {
       state: Joi.string().optional(),
       city: Joi.string().optional(),
       address: Joi.string().optional(),
+      zipCode: Joi.string().optional(),
     }).optional(),
     companyRole: Joi.string().optional(),
     skills: Joi.array().items(Joi.string()).optional(),
@@ -68,9 +70,16 @@ export default {
         .required(),
       rate: Joi.number().positive().required(),
     }).optional(),
-    availability: Joi.string()
-      .valid(Availability.AVAILABLE, Availability.AWAY, Availability.BUSY)
-      .optional(),
+    availability: Joi.object({
+      status: Joi.string()
+        .valid(
+          AvailabilityStatus.AVAILABLE,
+          AvailabilityStatus.AWAY,
+          AvailabilityStatus.BUSY,
+        )
+        .optional(),
+      hoursPerWeek: Joi.string().optional(),
+    }).optional(),
     companyName: Joi.string().optional(),
     industry: Joi.string().optional(),
     website: Joi.string().optional().uri(),

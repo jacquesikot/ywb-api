@@ -10,10 +10,14 @@ export enum ExperienceLevel {
   SENIOR = 'SENIOR',
   EXPERT = 'EXPERT',
 }
-export enum Availability {
+export enum AvailabilityStatus {
   AVAILABLE = 'AVAILABLE',
   BUSY = 'BUSY',
   AWAY = 'AWAY',
+}
+export interface Availability {
+  status: AvailabilityStatus;
+  hoursPerWeek?: string;
 }
 export enum PreferredRate {
   HOURLY = 'HOURLY',
@@ -56,6 +60,7 @@ export default interface User {
     state?: string;
     city?: string;
     address?: string;
+    zipCode?: string;
   };
   role: Role;
   companyRole?: string;
@@ -131,6 +136,10 @@ const schema = new Schema<User>(
         type: Schema.Types.String,
         required: false,
       },
+      zipCode: {
+        type: Schema.Types.String,
+        required: false,
+      },
     },
     role: {
       type: Schema.Types.ObjectId,
@@ -183,8 +192,13 @@ const schema = new Schema<User>(
       },
     },
     availability: {
-      type: Schema.Types.String,
-      enum: [Availability],
+      status: {
+        type: Schema.Types.String,
+        enum: [AvailabilityStatus],
+      },
+      hoursPerWeek: {
+        type: Schema.Types.String,
+      },
     },
     companyName: {
       type: Schema.Types.String,
