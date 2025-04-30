@@ -153,4 +153,46 @@ export default {
       images: Joi.array().items(Joi.string()),
     }),
   },
+  proposal: {
+    create: Joi.object().keys({
+      job: Joi.string().required(),
+      pricingMode: Joi.string().valid('fixed', 'hourly').required(),
+      amount: Joi.number().positive().required(),
+      milestones: Joi.array()
+        .items(
+          Joi.object().keys({
+            name: Joi.string().required(),
+            description: Joi.string().required(),
+            deliverables: Joi.array().items(Joi.string()).min(1).required(),
+            dueDate: Joi.date().greater('now').required(),
+          }),
+        )
+        .min(1)
+        .required(),
+    }),
+    update: Joi.object().keys({
+      pricingMode: Joi.string().valid('fixed', 'hourly'),
+      amount: Joi.number().positive(),
+      status: Joi.string().valid(
+        'pending',
+        'accepted',
+        'rejected',
+        'completed',
+      ),
+    }),
+  },
+  milestone: {
+    update: Joi.object().keys({
+      name: Joi.string(),
+      description: Joi.string(),
+      deliverables: Joi.array().items(Joi.string()).min(1),
+      dueDate: Joi.date().greater('now'),
+      status: Joi.string().valid('pending', 'in_progress', 'completed'),
+    }),
+    updateStatus: Joi.object().keys({
+      status: Joi.string()
+        .valid('pending', 'in_progress', 'completed')
+        .required(),
+    }),
+  },
 };

@@ -2,12 +2,12 @@ import express from 'express';
 import apiKey from '../auth/apiKey';
 import { Permission } from '../database/model/ApiKey';
 import permission from '../helpers/permission';
+import forgotPassword from './access/forgotPassword';
 import login from './access/login';
 import logout from './access/logout';
+import resetPassword from './access/resetPassword';
 import signup from './access/signup';
 import verifyEmail from './access/verifyEmail';
-import forgotPassword from './access/forgotPassword';
-import resetPassword from './access/resetPassword';
 import adminApiKey from './admin/adminApiKey';
 import adminKYC from './admin/adminKYC';
 import role from './admin/role';
@@ -23,6 +23,7 @@ import project from './project';
 import subscription from './subscription';
 import user from './user';
 import wave from './wave';
+import proposal from './proposal';
 
 const router = express.Router();
 router.use('/reset-password', resetPassword);
@@ -45,11 +46,16 @@ router.use('/message', permission(Permission.GENERAL), message);
 router.use('/notification', permission(Permission.GENERAL), notification);
 router.use('/dashboard', permission(Permission.GENERAL), dashboard);
 router.use('/job', permission(Permission.GENERAL), job);
-router.use('/education', permission(Permission.GENERAL), require('./education').default);
+router.use(
+  '/education',
+  permission(Permission.GENERAL),
+  require('./education').default,
+);
 router.use('/favorite', permission(Permission.GENERAL), favorite);
 router.use('/kyc', permission(Permission.GENERAL), kyc);
 router.use('/project', permission(Permission.GENERAL), project);
 router.use('/subscription', permission(Permission.GENERAL), subscription);
+router.use('/proposal', permission(Permission.GENERAL), proposal);
 
 // Admin routes
 router.use('/admin/apiKey', permission(Permission.ADMIN), adminApiKey);
