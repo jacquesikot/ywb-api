@@ -39,7 +39,7 @@ async function findAll(filter: any = {}): Promise<Job[]> {
   return JobModel.find(filter)
     .select('+createdAt')
     .populate('skills', { _id: 1, name: 1 })
-    .populate('user', { _id: 1, name: 1, email: 1, role: 1 })
+    .populate('user')
     .sort({ createdAt: -1 })
     .lean()
     .exec();
