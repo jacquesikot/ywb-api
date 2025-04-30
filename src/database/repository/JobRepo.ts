@@ -36,7 +36,13 @@ async function deleteById(id: string): Promise<Job | null> {
 }
 
 async function findAll(filter: any = {}): Promise<Job[]> {
-  return JobModel.find(filter).lean().exec();
+  return JobModel.find(filter)
+    .select('+createdAt')
+    .populate('skills', { _id: 1, name: 1 })
+    .populate('user', { _id: 1, name: 1, email: 1, role: 1 })
+    .sort({ createdAt: -1 })
+    .lean()
+    .exec();
 }
 
 async function updateStatusById(

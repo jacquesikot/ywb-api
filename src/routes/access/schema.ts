@@ -73,9 +73,10 @@ export default {
     availability: Joi.object({
       status: Joi.string()
         .valid(
-          AvailabilityStatus.AVAILABLE,
-          AvailabilityStatus.AWAY,
-          AvailabilityStatus.BUSY,
+          AvailabilityStatus.CONTRACT,
+          AvailabilityStatus.FULLTIME,
+          AvailabilityStatus.HYBRID,
+          AvailabilityStatus.REMOTE,
         )
         .optional(),
       hoursPerWeek: Joi.string().optional(),
