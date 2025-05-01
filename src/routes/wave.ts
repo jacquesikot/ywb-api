@@ -200,7 +200,6 @@ router.get(
         };
       }),
     );
-    console.log('🚀 ~ asyncHandler ~ populatedWaves:', populatedWaves);
 
     new SuccessResponse(
       'User waves retrieved successfully',
@@ -491,7 +490,7 @@ router.get(
     interface WavesByFreelancerId {
       [key: string]: any[];
     }
-    
+
     const wavesByFreelancerId: WavesByFreelancerId = {};
     waves.forEach((wave: any) => {
       const freelancerId = wave.freelancerId.toString();
@@ -500,35 +499,37 @@ router.get(
       }
       wavesByFreelancerId[freelancerId].push(wave);
     });
-    
+
     // Get unique applicant details with their associated waves and jobs
     const uniqueApplicants = await Promise.all(
-      Object.entries(wavesByFreelancerId).map(async ([freelancerIdStr, userWaves]: [string, any[]]) => {
-        // Get freelancer (applicant) details - use original ObjectId from one of the waves
-        const user = await UserRepo.findById(userWaves[0].freelancerId);
-        if (!user) return null;
-        
-        // Get job details for each wave
-        const wavesWithJobs = await Promise.all(
-          userWaves.map(async (wave: any) => {
-            const job = await JobRepo.findById(wave.jobId.toString());
-            if (!job) return null;
-            
-            return {
-              wave,
-              job,
-            };
-          })
-        );
-        
-        // Filter out any null entries (where job wasn't found)
-        const validWaves = wavesWithJobs.filter((item: any) => item !== null);
+      Object.entries(wavesByFreelancerId).map(
+        async ([freelancerIdStr, userWaves]: [string, any[]]) => {
+          // Get freelancer (applicant) details - use original ObjectId from one of the waves
+          const user = await UserRepo.findById(userWaves[0].freelancerId);
+          if (!user) return null;
 
-        return {
-          user,
-          waves: validWaves,
-        };
-      }),
+          // Get job details for each wave
+          const wavesWithJobs = await Promise.all(
+            userWaves.map(async (wave: any) => {
+              const job = await JobRepo.findById(wave.jobId.toString());
+              if (!job) return null;
+
+              return {
+                wave,
+                job,
+              };
+            }),
+          );
+
+          // Filter out any null entries (where job wasn't found)
+          const validWaves = wavesWithJobs.filter((item: any) => item !== null);
+
+          return {
+            user,
+            waves: validWaves,
+          };
+        },
+      ),
     );
 
     // Filter out any null entries (where user wasn't found)
