@@ -16,7 +16,14 @@ async function findByTitles(titles: string[]): Promise<Job[]> {
 
 async function findById(id: string): Promise<Job | null> {
   return JobModel.findById(id)
-    .populate('user', { _id: 1, name: 1, email: 1 })
+    .select('+createdAt')
+    .populate({
+      path: 'user',
+      populate: {
+        path: 'role',
+      },
+    })
+    .populate('skills')
     .lean()
     .exec();
 }
@@ -38,8 +45,13 @@ async function deleteById(id: string): Promise<Job | null> {
 async function findAll(filter: any = {}): Promise<Job[]> {
   return JobModel.find(filter)
     .select('+createdAt')
-    .populate('skills', { _id: 1, name: 1 })
-    .populate('user')
+    .populate({
+      path: 'user',
+      populate: {
+        path: 'role',
+      },
+    })
+    .populate('skills')
     .sort({ createdAt: -1 })
     .lean()
     .exec();
@@ -75,8 +87,13 @@ async function findJobMatch(user: User): Promise<Job[]> {
     skills: { $in: skills },
     status: JobStatus.OPEN,
   })
-    .populate('skills', { _id: 1, name: 1 })
-    .populate('user', { _id: 1, name: 1, email: 1, role: 1 })
+    .populate({
+      path: 'user',
+      populate: {
+        path: 'role',
+      },
+    })
+    .populate('skills')
     .lean()
     .exec();
 }
@@ -97,8 +114,13 @@ async function findByUserId(
 
   return JobModel.find(filter)
     .select('+createdAt')
-    .populate('skills', { _id: 1, name: 1 })
-    .populate('user', { _id: 1, name: 1, email: 1, role: 1 })
+    .populate({
+      path: 'user',
+      populate: {
+        path: 'role',
+      },
+    })
+    .populate('skills')
     .sort({ createdAt: -1 })
     .lean()
     .exec();
