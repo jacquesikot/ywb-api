@@ -14,15 +14,20 @@ export default class ProjectRepo {
     return ProjectModel.findById(id).exec();
   }
 
-  static async updateById(id: Types.ObjectId, update: Partial<Project>): Promise<Project | null> {
+  static async updateById(
+    id: Types.ObjectId,
+    update: Partial<Project>,
+  ): Promise<Project | null> {
     return ProjectModel.findByIdAndUpdate(id, update, { new: true }).exec();
   }
 
   static async deleteById(id: Types.ObjectId): Promise<Project | null> {
     return ProjectModel.findByIdAndDelete(id).exec();
   }
-  
+
   static async findAll(): Promise<Project[]> {
-    return ProjectModel.find().populate('user', 'name profilePicture').exec();
+    return ProjectModel.find()
+      .populate('user', 'name profilePicture bio')
+      .exec();
   }
 }

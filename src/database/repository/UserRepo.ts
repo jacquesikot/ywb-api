@@ -37,7 +37,7 @@ async function findPrivateProfileById(
 // contains critical information of the user
 async function findById(id: Types.ObjectId): Promise<User | null> {
   return UserModel.findOne({ _id: id, status: true })
-    .select('+email +password +role')
+    .select('+email +password +role +bio')
     .populate({
       path: 'role',
       match: { status: true },
@@ -70,7 +70,10 @@ async function findFieldsById(
 }
 
 async function findPublicProfileById(id: Types.ObjectId): Promise<User | null> {
-  return UserModel.findOne({ _id: id, status: true }).lean().exec();
+  return UserModel.findOne({ _id: id, status: true })
+    .select('+bio')
+    .lean()
+    .exec();
 }
 
 async function findUsersWithMatchingSkills(
