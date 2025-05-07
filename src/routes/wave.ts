@@ -6,6 +6,7 @@ import { SuccessResponse } from '../core/ApiResponse';
 import { NotificationType } from '../database/model/Notification';
 import { Plan } from '../database/model/User';
 import { WaveStatus } from '../database/model/Wave';
+import { UserWaveModel } from '../database/model/UserWave';
 import ChatRepo from '../database/repository/ChatRepo';
 import JobRepo from '../database/repository/JobRepo';
 import MessageRepo from '../database/repository/MessageRepo';
@@ -15,6 +16,8 @@ import WaveRepo from '../database/repository/WaveRepo';
 import asyncHandler from '../helpers/asyncHandler';
 import validator from '../helpers/validator';
 import schema from './schema';
+import UserWaveRepo from '../database/repository/UserWaveRepo';
+import { Types } from 'mongoose';
 
 const router = express.Router();
 
@@ -44,14 +47,10 @@ router.use(authentication);
  *             type: object
  *             required:
  *               - jobId
- *               - freelancerId
  *             properties:
  *               jobId:
  *                 type: string
  *                 description: ID of the job being applied to
- *               freelancerId:
- *                 type: string
- *                 description: ID of the freelancer applying for the job
  *     responses:
  *       200:
  *         description: Wave created successfully
@@ -85,6 +84,14 @@ router.post(
 
     const freelancerDetails = await UserRepo.findById(user._id);
 
+    // Check if user has available waves
+    const userWave = await UserWaveRepo.getOrCreate(user._id);
+    if (userWave.availableWaves <= 0) {
+      throw new BadRequestError(
+        'You have used all your available waves for this month',
+      );
+    }
+
     const job = await JobRepo.findById(jobId);
     if (!job) throw new NotFoundError('Job not found');
 
@@ -105,6 +112,9 @@ router.post(
     };
 
     const wave = await WaveRepo.create(waveData);
+
+    // Decrement user's available waves
+    await UserWaveRepo.decrementWave(user._id);
 
     await NotificationRepo.create({
       type: NotificationType.NEW_WAVE,
@@ -541,6 +551,152 @@ router.get(
       'Unique wave applicants retrieved successfully',
       validApplicants,
     ).send(res);
+  }),
+);
+
+/**
+ * @swagger
+ * /wave/available:
+ *   get:
+ *     summary: Get the user's available waves information
+ *     tags: [Waves]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User's available waves information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userWave:
+ *                       type: object
+ *                       properties:
+ *                         availableWaves:
+ *                           type: number
+ *                         lastRefillDate:
+ *                           type: string
+ *                           format: date-time
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
+router.get(
+  '/available',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const userId = req.user._id;
+
+    const userWave = await UserWaveRepo.getOrCreate(userId);
+
+    const lastRefill = new Date(userWave.lastRefillDate);
+    const now = new Date();
+    const daysSinceLastRefill = Math.floor(
+      (now.getTime() - lastRefill.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    const daysUntilNextRefill = Math.max(0, 30 - daysSinceLastRefill);
+
+    const nextRefillDate = new Date(lastRefill);
+    nextRefillDate.setDate(nextRefillDate.getDate() + 30);
+
+    new SuccessResponse('User waves retrieved successfully', {
+      userWave: {
+        availableWaves: userWave.availableWaves,
+        totalWavesPerMonth: 20,
+        lastRefillDate: userWave.lastRefillDate,
+        nextRefillDate: nextRefillDate,
+        daysUntilNextRefill: daysUntilNextRefill,
+      },
+    }).send(res);
+  }),
+);
+
+/**
+ * @swagger
+ * /wave/dev/add-waves:
+ *   post:
+ *     summary: Add waves to a user (For testing purposes, will be removed in production)
+ *     tags: [Waves]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: ID of the user to add waves to
+ *               wavesToAdd:
+ *                 type: number
+ *                 description: Number of waves to add (default 5)
+ *               resetRefillDate:
+ *                 type: boolean
+ *                 description: Whether to reset the lastRefillDate to current date (default false)
+ *     responses:
+ *       200:
+ *         description: Waves added successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ */
+router.post(
+  '/dev/add-waves',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const { userId, wavesToAdd = 5, resetRefillDate = false } = req.body;
+
+    if (!userId) {
+      throw new BadRequestError('userId is required');
+    }
+
+    // Check if user exists
+    const userExists = await UserRepo.exists(new Types.ObjectId(userId));
+    if (!userExists) {
+      throw new NotFoundError('User not found');
+    }
+
+    // Get or create user wave record
+    let userWave = await UserWaveRepo.findByUserId(new Types.ObjectId(userId));
+
+    if (!userWave) {
+      // Create a new user wave record
+      userWave = await UserWaveRepo.create(new Types.ObjectId(userId));
+    }
+
+    // Update user wave record
+    const updateData: any = {
+      $inc: { availableWaves: wavesToAdd },
+    };
+
+    if (resetRefillDate) {
+      updateData.$set = { lastRefillDate: new Date() };
+    }
+
+    const updatedUserWave = await UserWaveModel.findByIdAndUpdate(
+      userWave._id,
+      updateData,
+      { new: true },
+    ).lean();
+
+    new SuccessResponse('Waves added successfully', {
+      userWave: updatedUserWave,
+      message: `Added ${wavesToAdd} waves to user. ${resetRefillDate ? 'Last refill date was reset.' : ''}`,
+    }).send(res);
   }),
 );
 

@@ -1,6 +1,10 @@
 import Logger from './core/Logger';
 import { port } from './config';
 import app from './app';
+import initScheduler from './scheduler';
+
+// Initialize the scheduler for periodic tasks
+initScheduler();
 
 app
   .listen(port, () => {
