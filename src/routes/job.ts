@@ -12,6 +12,7 @@ import {
 import { RoleCode } from '../database/model/Role';
 import JobRepo from '../database/repository/JobRepo';
 import UserRepo from '../database/repository/UserRepo';
+import WaveRepo from '../database/repository/WaveRepo';
 import asyncHandler from '../helpers/asyncHandler';
 import roleAccess from '../helpers/roleAccess';
 import validator from '../helpers/validator';
@@ -28,6 +29,28 @@ const router = express.Router();
  */
 
 router.use(authentication);
+
+/**
+ * Helper function to check if a user has waved at a job
+ */
+async function addWaveStatus(jobs: any[], userId: string) {
+  if (!jobs.length) return jobs;
+
+  // Get all waves for this user
+  const userWaves = await WaveRepo.findFreelancerById(userId);
+
+  // Create a map of jobId to wave status for quick lookup
+  const jobWaveMap = new Map();
+  userWaves.forEach((wave) => {
+    jobWaveMap.set(wave.jobId.toString(), true);
+  });
+
+  // Add hasWaved field to each job
+  return jobs.map((job) => ({
+    ...job,
+    hasWaved: jobWaveMap.has(job._id.toString()),
+  }));
+}
 
 /**
  * @swagger
@@ -111,7 +134,7 @@ router.use(authentication);
  */
 router.get(
   '/all',
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: ProtectedRequest, res) => {
     const {
       status,
       locationPreference,
@@ -186,8 +209,14 @@ router.get(
     // Fetch jobs based on filter and populate related data
     const jobs = await JobRepo.findAll(filter);
 
-    new SuccessResponse('Jobs fetched successfully', {
+    // Add hasWaved field to each job
+    const jobsWithWaveStatus = await addWaveStatus(
       jobs,
+      req.user._id.toString(),
+    );
+
+    new SuccessResponse('Jobs fetched successfully', {
+      jobs: jobsWithWaveStatus,
     }).send(res);
   }),
 );
@@ -238,8 +267,11 @@ router.get(
 
     const jobs = await JobRepo.findJobMatch(user);
 
+    // Add hasWaved field to each job
+    const jobsWithWaveStatus = await addWaveStatus(jobs, _id.toString());
+
     new SuccessResponse('Jobs fetched successfully', {
-      jobs,
+      jobs: jobsWithWaveStatus,
     }).send(res);
   }),
 );
@@ -314,8 +346,11 @@ router.get(
 
     const jobs = await JobRepo.findByUserId(userId, statusFilter);
 
+    // Add hasWaved field to each job
+    const jobsWithWaveStatus = await addWaveStatus(jobs, _id.toString());
+
     new SuccessResponse('User jobs fetched successfully', {
-      jobs,
+      jobs: jobsWithWaveStatus,
     }).send(res);
   }),
 );
@@ -360,7 +395,7 @@ router.get(
  */
 router.get(
   '/:jobId',
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: ProtectedRequest, res) => {
     const { jobId } = req.params;
     const job = await JobRepo.findById(jobId);
 
@@ -368,8 +403,20 @@ router.get(
       throw new BadRequestError('Job not found');
     }
 
+    // Check if the user has waved at this job
+    const userWaves = await WaveRepo.findFreelancerById(
+      req.user._id.toString(),
+    );
+    const hasWaved = userWaves.some((wave) => wave.jobId.toString() === jobId);
+
+    // Add hasWaved field to the job
+    const jobWithWaveStatus = {
+      ...job,
+      hasWaved,
+    };
+
     new SuccessResponse('Job fetched successfully', {
-      job,
+      job: jobWithWaveStatus,
     }).send(res);
   }),
 );
