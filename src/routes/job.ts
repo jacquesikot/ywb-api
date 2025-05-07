@@ -388,6 +388,11 @@ router.get(
  *                   properties:
  *                     job:
  *                       type: object
+ *                     recentJobs:
+ *                       type: array
+ *                       description: Last 5 recent jobs posted by the same user who created this job
+ *                       items:
+ *                         type: object
  *       400:
  *         description: Bad request - Job not found
  *       401:
@@ -415,8 +420,18 @@ router.get(
       hasWaved,
     };
 
+    // Fetch recent jobs (last 5) created by the same user who created this job
+    const recentJobs = await JobRepo.findByUserId(job.user, undefined, 5);
+
+    // Add hasWaved status to recent jobs
+    const recentJobsWithWaveStatus = await addWaveStatus(
+      recentJobs.filter((recentJob) => recentJob._id.toString() !== jobId), // Exclude current job
+      req.user._id.toString(),
+    );
+
     new SuccessResponse('Job fetched successfully', {
       job: jobWithWaveStatus,
+      recentJobs: recentJobsWithWaveStatus,
     }).send(res);
   }),
 );

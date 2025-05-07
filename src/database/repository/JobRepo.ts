@@ -101,6 +101,7 @@ async function findJobMatch(user: User): Promise<Job[]> {
 async function findByUserId(
   userId: Types.ObjectId,
   statusFilter?: JobStatus | JobStatus[],
+  limit?: number,
 ): Promise<Job[]> {
   const filter: any = { user: userId };
 
@@ -112,7 +113,7 @@ async function findByUserId(
     }
   }
 
-  return JobModel.find(filter)
+  let query = JobModel.find(filter)
     .select('+createdAt')
     .populate({
       path: 'user',
@@ -121,9 +122,13 @@ async function findByUserId(
       },
     })
     .populate('skills')
-    .sort({ createdAt: -1 })
-    .lean()
-    .exec();
+    .sort({ createdAt: -1 });
+
+  if (limit) {
+    query = query.limit(limit);
+  }
+
+  return query.lean().exec();
 }
 
 export default {
