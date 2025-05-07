@@ -25,7 +25,7 @@ export enum BudgetType {
   FIXED = 'FIXED',
   HOURLY = 'HOURLY',
   WEEKLY = 'WEEKLY',
-  MONTHLY = 'MONTHLY'
+  MONTHLY = 'MONTHLY',
 }
 
 export enum JobVisibility {
@@ -38,7 +38,7 @@ export default interface Job {
   user: Types.ObjectId;
   title: string;
   description: string;
-  category: string;
+  category: string[];
   skills: Skill[];
   waves: Types.ObjectId[];
   locationPreference?: LocationPreference;
@@ -80,7 +80,7 @@ const schema = new Schema<Job>(
       required: true,
     },
     category: {
-      type: Schema.Types.String,
+      type: [Schema.Types.String],
       required: true,
     },
     skills: [
