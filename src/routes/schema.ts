@@ -15,7 +15,7 @@ export default {
   createJob: Joi.object().keys({
     title: Joi.string().required().min(3).max(100),
     description: Joi.string().required().min(10),
-    category: Joi.string().required(),
+    category: Joi.array().items(Joi.string().optional()).optional(),
     skills: Joi.array().items(Joi.string().required()).min(1).required(),
     budget: Joi.object().keys({
       type: Joi.string()

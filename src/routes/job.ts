@@ -501,7 +501,9 @@ router.use(roleAccess([RoleCode.BUSINESS, RoleCode.CLIENT]));
  *                     type: number
  *                     description: Maximum hours per week
  *               category:
- *                 type: string
+ *                 type: array
+ *                 items:
+ *                    type: string
  *                 description: Category of the job
  *               timeline:
  *                 type: string
