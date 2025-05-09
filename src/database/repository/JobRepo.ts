@@ -19,6 +19,7 @@ async function findById(id: string): Promise<Job | null> {
     .select('+createdAt')
     .populate({
       path: 'user',
+      select: '_id name email bio',
       populate: {
         path: 'role',
       },
