@@ -436,6 +436,67 @@ router.get(
   }),
 );
 
+/**
+ * @swagger
+ * /job/{jobId}/has-waved:
+ *   get:
+ *     summary: Check if the authenticated user has waved to a specific job
+ *     tags: [Jobs]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the job to check
+ *     responses:
+ *       200:
+ *         description: Successfully checked wave status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     hasWaved:
+ *                       type: boolean
+ *                       description: True if user has waved to the job, false otherwise
+ *       400:
+ *         description: Bad request - Job not found
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
+router.get(
+  '/:jobId/has-waved',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const { jobId } = req.params;
+    const userId = req.user._id.toString();
+
+    // Check if the job exists
+    const job = await JobRepo.findById(jobId);
+    if (!job) {
+      throw new BadRequestError('Job not found');
+    }
+
+    // Check if the user has waved at this job
+    const userWaves = await WaveRepo.findFreelancerById(userId);
+    const hasWaved = userWaves.some((wave) => wave.jobId.toString() === jobId);
+
+    new SuccessResponse('Wave status checked successfully', {
+      hasWaved,
+    }).send(res);
+  }),
+);
+
 router.use(roleAccess([RoleCode.BUSINESS, RoleCode.CLIENT]));
 
 /**
