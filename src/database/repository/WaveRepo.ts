@@ -63,8 +63,18 @@ async function findAll(): Promise<Wave[]> {
   return WaveModel.find().lean().exec();
 }
 
-async function findTopFreelancersByWaves(limit: number = 10): Promise<any[]> {
-  return WaveModel.aggregate([
+async function findTopFreelancersByWaves(
+  limit: number = 10,
+  filters: {
+    skills?: string[];
+    location?: {
+      country?: string;
+      state?: string;
+      city?: string;
+    };
+  } = {},
+): Promise<any[]> {
+  const pipeline: any[] = [
     // Group by freelancerId and count waves
     {
       $group: {
@@ -105,6 +115,52 @@ async function findTopFreelancersByWaves(limit: number = 10): Promise<any[]> {
         'user.status': true,
       },
     },
+  ];
+
+  // Add location filter if provided
+  if (filters.location) {
+    const locationMatch: any = {};
+
+    if (filters.location.country) {
+      locationMatch['user.location.country'] = filters.location.country;
+    }
+
+    if (filters.location.state) {
+      locationMatch['user.location.state'] = filters.location.state;
+    }
+
+    if (filters.location.city) {
+      locationMatch['user.location.city'] = filters.location.city;
+    }
+
+    if (Object.keys(locationMatch).length > 0) {
+      pipeline.push({ $match: locationMatch });
+    }
+  }
+
+  // Lookup skills to be able to filter by skill names
+  if (filters.skills && filters.skills.length > 0) {
+    pipeline.push(
+      // Lookup skills collection to get skill names
+      {
+        $lookup: {
+          from: 'skills',
+          localField: 'user.skills',
+          foreignField: '_id',
+          as: 'skillDetails',
+        },
+      },
+      // Match users with the specified skills
+      {
+        $match: {
+          'skillDetails.name': { $in: filters.skills },
+        },
+      },
+    );
+  }
+
+  // Add the final projection and sorting stages
+  pipeline.push(
     // Select relevant fields and reshape
     {
       $project: {
@@ -113,9 +169,11 @@ async function findTopFreelancersByWaves(limit: number = 10): Promise<any[]> {
         email: '$user.email',
         profilePicUrl: '$user.profilePicUrl',
         bio: '$user.bio',
+        location: '$user.location',
         role: '$role',
         waveCount: 1,
         skills: '$user.skills',
+        skillDetails: 1,
       },
     },
     // Sort by wave count in descending order
@@ -128,7 +186,9 @@ async function findTopFreelancersByWaves(limit: number = 10): Promise<any[]> {
     {
       $limit: limit,
     },
-  ]).exec();
+  );
+
+  return WaveModel.aggregate(pipeline).exec();
 }
 
 export default {

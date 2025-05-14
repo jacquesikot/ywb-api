@@ -394,6 +394,30 @@ router.get(
  *           type: integer
  *           default: 10
  *         description: Number of top talents to return
+ *       - in: query
+ *         name: skills
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         style: form
+ *         explode: true
+ *         description: Skills to filter by (comma-separated list)
+ *       - in: query
+ *         name: country
+ *         schema:
+ *           type: string
+ *         description: Country to filter by
+ *       - in: query
+ *         name: state
+ *         schema:
+ *           type: string
+ *         description: State to filter by
+ *       - in: query
+ *         name: city
+ *         schema:
+ *           type: string
+ *         description: City to filter by
  *     responses:
  *       200:
  *         description: Top talents retrieved successfully
@@ -418,12 +442,52 @@ router.get(
   asyncHandler(async (req: ProtectedRequest, res) => {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
 
-    // Find top freelancers by wave count
-    const topTalents = await WaveRepo.findTopFreelancersByWaves(limit);
+    // Parse skills filter (expects a comma-separated list)
+    const skills = req.query.skills
+      ? (req.query.skills as string).split(',')
+      : undefined;
+
+    // Parse location filter
+    const location: {
+      country?: string;
+      state?: string;
+      city?: string;
+    } = {};
+
+    if (req.query.country) location.country = req.query.country as string;
+    if (req.query.state) location.state = req.query.state as string;
+    if (req.query.city) location.city = req.query.city as string;
+
+    // Build filters object
+    const filters: {
+      skills?: string[];
+      location?: {
+        country?: string;
+        state?: string;
+        city?: string;
+      };
+    } = {};
+
+    if (skills && skills.length > 0) filters.skills = skills;
+    if (Object.keys(location).length > 0) filters.location = location;
+
+    // Find top freelancers by wave count with filters
+    const topTalents = await WaveRepo.findTopFreelancersByWaves(limit, filters);
 
     // Populate skills for each talent
     const populatedTopTalents = await Promise.all(
       topTalents.map(async (talent) => {
+        // If we've already looked up skill details (through filtering),
+        // use those instead of making another query
+        if (talent.skillDetails && talent.skillDetails.length > 0) {
+          return {
+            ...talent,
+            skills: talent.skillDetails,
+            skillDetails: undefined,
+          };
+        }
+
+        // Otherwise, look up skills by IDs as before
         if (talent.skills && talent.skills.length > 0) {
           const skillIds = talent.skills.map(
             (skillId: Types.ObjectId) => new Types.ObjectId(skillId),
@@ -431,6 +495,7 @@ router.get(
           const skills = await SkillRepo.findByIds(skillIds);
           return { ...talent, skills };
         }
+
         return talent;
       }),
     );
