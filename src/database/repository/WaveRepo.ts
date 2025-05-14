@@ -63,6 +63,74 @@ async function findAll(): Promise<Wave[]> {
   return WaveModel.find().lean().exec();
 }
 
+async function findTopFreelancersByWaves(limit: number = 10): Promise<any[]> {
+  return WaveModel.aggregate([
+    // Group by freelancerId and count waves
+    {
+      $group: {
+        _id: '$freelancerId',
+        waveCount: { $sum: 1 },
+      },
+    },
+    // Lookup the user details
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    // Unwind the user array to get a single object
+    {
+      $unwind: '$user',
+    },
+    // Lookup the role to filter only FREELANCERS
+    {
+      $lookup: {
+        from: 'roles',
+        localField: 'user.role',
+        foreignField: '_id',
+        as: 'role',
+      },
+    },
+    // Unwind the role array
+    {
+      $unwind: '$role',
+    },
+    // Match only FREELANCER role
+    {
+      $match: {
+        'role.code': 'FREELANCER',
+        'user.status': true,
+      },
+    },
+    // Select relevant fields and reshape
+    {
+      $project: {
+        _id: '$user._id',
+        name: '$user.name',
+        email: '$user.email',
+        profilePicUrl: '$user.profilePicUrl',
+        bio: '$user.bio',
+        role: '$role',
+        waveCount: 1,
+        skills: '$user.skills',
+      },
+    },
+    // Sort by wave count in descending order
+    {
+      $sort: {
+        waveCount: -1,
+      },
+    },
+    // Limit results
+    {
+      $limit: limit,
+    },
+  ]).exec();
+}
+
 export default {
   findById,
   findJobById,
@@ -72,4 +140,5 @@ export default {
   deleteById,
   updateStatusById,
   findAll,
+  findTopFreelancersByWaves,
 };

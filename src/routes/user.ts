@@ -14,6 +14,7 @@ import { getSkillsFromUser } from '../database/repository/JobRepo';
 import asyncHandler from '../helpers/asyncHandler';
 import validator from '../helpers/validator';
 import schema from './access/schema';
+import WaveRepo from '../database/repository/WaveRepo'; // Import WaveRepo for top talents endpoint
 
 const router = express.Router();
 
@@ -373,6 +374,70 @@ router.get(
     return new SuccessResponse(
       'Talents retrieved successfully',
       matchingUsers,
+    ).send(res);
+  }),
+);
+
+/**
+ * @swagger
+ * /user/talents/top-talents:
+ *   get:
+ *     summary: Get top freelancers sorted by number of waves
+ *     tags: [User]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of top talents to return
+ *     responses:
+ *       200:
+ *         description: Top talents retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
+router.get(
+  '/talents/top-talents',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+    // Find top freelancers by wave count
+    const topTalents = await WaveRepo.findTopFreelancersByWaves(limit);
+
+    // Populate skills for each talent
+    const populatedTopTalents = await Promise.all(
+      topTalents.map(async (talent) => {
+        if (talent.skills && talent.skills.length > 0) {
+          const skillIds = talent.skills.map(
+            (skillId: Types.ObjectId) => new Types.ObjectId(skillId),
+          );
+          const skills = await SkillRepo.findByIds(skillIds);
+          return { ...talent, skills };
+        }
+        return talent;
+      }),
+    );
+
+    return new SuccessResponse(
+      'Top talents retrieved successfully',
+      populatedTopTalents,
     ).send(res);
   }),
 );
