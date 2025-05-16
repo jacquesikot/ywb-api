@@ -351,7 +351,7 @@ router.put(
  *         description: Unauthorized - Invalid token
  */
 router.get(
-  '/talents',
+  '/talents/match',
   asyncHandler(async (req: ProtectedRequest, res) => {
     const { _id } = req.user;
     const userId = new Types.ObjectId(_id);
@@ -504,6 +504,148 @@ router.get(
       'Top talents retrieved successfully',
       populatedTopTalents,
     ).send(res);
+  }),
+);
+
+/**
+ * @swagger
+ * /user/talents:
+ *   get:
+ *     summary: Get all users with role of freelancer or client
+ *     tags: [User]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of users per page
+ *       - in: query
+ *         name: skills
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         style: form
+ *         explode: true
+ *         description: Skills to filter by (comma-separated list of skill IDs)
+ *       - in: query
+ *         name: experienceLevel
+ *         schema:
+ *           type: string
+ *         description: Experience level to filter by
+ *       - in: query
+ *         name: country
+ *         schema:
+ *           type: string
+ *         description: Country to filter by
+ *       - in: query
+ *         name: state
+ *         schema:
+ *           type: string
+ *         description: State to filter by
+ *       - in: query
+ *         name: city
+ *         schema:
+ *           type: string
+ *         description: City to filter by
+ *     responses:
+ *       200:
+ *         description: Users retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     users:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     pages:
+ *                       type: integer
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
+router.get(
+  '/talents',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    // Parse pagination parameters
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+    // Parse skills filter (expects a comma-separated list)
+    const skills = req.query.skills
+      ? (req.query.skills as string).split(',')
+      : undefined;
+
+    // Parse experience level filter
+    const experienceLevel = req.query.experienceLevel as string | undefined;
+
+    // Parse location filter
+    const location: {
+      country?: string;
+      state?: string;
+      city?: string;
+    } = {};
+
+    if (req.query.country) location.country = req.query.country as string;
+    if (req.query.state) location.state = req.query.state as string;
+    if (req.query.city) location.city = req.query.city as string;
+
+    // Build filters object
+    const filters: {
+      skills?: string[];
+      experienceLevel?: string;
+      location?: {
+        country?: string;
+        state?: string;
+        city?: string;
+      };
+    } = {};
+
+    if (skills && skills.length > 0) filters.skills = skills;
+    if (experienceLevel) filters.experienceLevel = experienceLevel;
+    if (Object.keys(location).length > 0) filters.location = location;
+
+    // Get users with roles 'FREELANCER' or 'CLIENT'
+    const { users, total } = await UserRepo.findUsersByRole(
+      ['FREELANCER', 'CLIENT'],
+      filters,
+      { page, limit },
+    );
+
+    // Calculate total pages
+    const pages = Math.ceil(total / limit);
+
+    return new SuccessResponse('Users retrieved successfully', {
+      users,
+      total,
+      page,
+      limit,
+      pages,
+    }).send(res);
   }),
 );
 

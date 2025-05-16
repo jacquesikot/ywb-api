@@ -111,6 +111,97 @@ async function findUsersWithMatchingSkills(
     .exec();
 }
 
+async function findUsersByRole(
+  roles: string[],
+  filters: {
+    skills?: string[];
+    experienceLevel?: string;
+    location?: {
+      country?: string;
+      state?: string;
+      city?: string;
+    };
+  },
+  pagination: {
+    page: number;
+    limit: number;
+  },
+): Promise<{ users: User[]; total: number }> {
+  const { page, limit } = pagination;
+  const skip = (page - 1) * limit;
+
+  // Base query with proper typing
+  const baseQuery: Record<string, any> = {
+    status: true,
+  };
+
+  // Add skill filter if provided
+  if (filters.skills && filters.skills.length > 0) {
+    baseQuery['skills'] = {
+      $in: filters.skills.map((id) => new Types.ObjectId(id)),
+    };
+  }
+
+  // Add experience level filter if provided
+  if (filters.experienceLevel) {
+    baseQuery['experienceLevel'] = filters.experienceLevel;
+  }
+
+  // Add location filters if provided
+  if (filters.location) {
+    if (filters.location.country) {
+      baseQuery['location.country'] = filters.location.country;
+    }
+    if (filters.location.state) {
+      baseQuery['location.state'] = filters.location.state;
+    }
+    if (filters.location.city) {
+      baseQuery['location.city'] = filters.location.city;
+    }
+  }
+
+  // First, get total count for pagination
+  // For counting, we need to join with roles to filter by role code
+  const roleIds = await RoleModel.find({ code: { $in: roles }, status: true })
+    .select('_id')
+    .lean()
+    .exec();
+
+  // Use the roleIds for filtering
+  baseQuery['role'] = { $in: roleIds.map((r) => r._id) };
+
+  const total = await UserModel.countDocuments(baseQuery);
+
+  // Then get paginated results
+  const users = await UserModel.find(baseQuery)
+    .skip(skip)
+    .limit(limit)
+    .select('+email +bio +location +availability')
+    .populate({
+      path: 'role',
+      match: { code: { $in: roles }, status: true },
+      select: { code: 1 },
+    })
+    .populate({
+      path: 'skills',
+      match: { status: true },
+      select: { name: 1 },
+    })
+    .populate({
+      path: 'talentPoolPreferences',
+      match: { status: true },
+      select: { name: 1 },
+    })
+    .lean<User[]>()
+    .exec();
+
+  // Filter out any users that might have null roles after population
+  // (this can happen if the populate match condition excluded the role)
+  const filteredUsers = users.filter((user) => user.role);
+
+  return { users: filteredUsers, total };
+}
+
 async function create(
   user: User,
   accessTokenKey: string,
@@ -208,6 +299,7 @@ export default {
   findFieldsById,
   findPublicProfileById,
   findUsersWithMatchingSkills,
+  findUsersByRole,
   create,
   createGoogleUser,
   update,
