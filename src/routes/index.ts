@@ -24,6 +24,7 @@ import subscription from './subscription';
 import user from './user';
 import wave from './wave';
 import proposal from './proposal';
+import workHistory from './workHistory';
 
 const router = express.Router();
 router.use('/reset-password', resetPassword);
@@ -51,6 +52,7 @@ router.use(
   permission(Permission.GENERAL),
   require('./education').default,
 );
+router.use('/workhistory', permission(Permission.GENERAL), workHistory);
 router.use('/favorite', permission(Permission.GENERAL), favorite);
 router.use('/kyc', permission(Permission.GENERAL), kyc);
 router.use('/project', permission(Permission.GENERAL), project);

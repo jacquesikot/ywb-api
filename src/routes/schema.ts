@@ -137,6 +137,36 @@ export default {
       description: Joi.string(),
     }),
   },
+  workHistory: {
+    create: Joi.object().keys({
+      title: Joi.string().required(),
+      company: Joi.string().required(),
+      location: Joi.string(),
+      website: Joi.string(),
+      startYear: Joi.string().required(),
+      endYear: Joi.string().when('currentlyWorkHere', {
+        is: false,
+        then: Joi.string().required(),
+        otherwise: Joi.string().optional(),
+      }),
+      currentlyWorkHere: Joi.boolean().default(false),
+      description: Joi.string(),
+    }),
+    update: Joi.object().keys({
+      title: Joi.string(),
+      company: Joi.string(),
+      location: Joi.string(),
+      website: Joi.string(),
+      startYear: Joi.string(),
+      endYear: Joi.string().when('currentlyWorkHere', {
+        is: false,
+        then: Joi.string(),
+        otherwise: Joi.string().optional().allow(null, ''),
+      }),
+      currentlyWorkHere: Joi.boolean(),
+      description: Joi.string(),
+    }),
+  },
   project: {
     create: Joi.object().keys({
       title: Joi.string().required().min(3).max(100),
