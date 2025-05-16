@@ -167,6 +167,22 @@ export default {
       description: Joi.string(),
     }),
   },
+  certificate: {
+    create: Joi.object().keys({
+      name: Joi.string().required(),
+      issuedBy: Joi.string().required(),
+      website: Joi.string(),
+      yearIssued: Joi.string().required(),
+      expiration: Joi.string(),
+    }),
+    update: Joi.object().keys({
+      name: Joi.string(),
+      issuedBy: Joi.string(),
+      website: Joi.string(),
+      yearIssued: Joi.string(),
+      expiration: Joi.string(),
+    }),
+  },
   project: {
     create: Joi.object().keys({
       title: Joi.string().required().min(3).max(100),
