@@ -805,4 +805,86 @@ router.get(
   }),
 );
 
+/**
+ * @swagger
+ * /user/onboarding-status:
+ *   get:
+ *     summary: Get user onboarding status
+ *     tags: [User]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User onboarding status retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     bioRoleLocation:
+ *                       type: boolean
+ *                     skillsTools:
+ *                       type: boolean
+ *                     workExperience:
+ *                       type: boolean
+ *                     projects:
+ *                       type: boolean
+ *                     education:
+ *                       type: boolean
+ *                     certification:
+ *                       type: boolean
+ *                     socialLinks:
+ *                       type: boolean
+ *       400:
+ *         description: Bad request - User not registered
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
+router.get(
+  '/onboarding-status',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const { _id } = req.user;
+    const userId = new Types.ObjectId(_id);
+
+    // Get user profile
+    const user = await UserRepo.findPrivateProfileById(userId);
+    if (!user) throw new BadRequestError('User not registered');
+
+    // Get additional user data
+    const workHistory = await WorkHistoryRepo.findByUser(userId);
+    const projects = await ProjectRepo.findByUser(userId);
+    const education = await EducationRepo.findByUser(userId);
+    const certificates = await CertificateRepo.findByUser(userId);
+
+    // Determine completion status for each section
+    const onboardingStatus = {
+      bioRoleLocation: !!(
+        user.bio &&
+        user.companyRole &&
+        user.location &&
+        Object.keys(user.location).length > 0
+      ),
+      skillsTools: !!(user.skills && user.skills.length > 0),
+      workExperience: !!(workHistory && workHistory.length > 0),
+      projects: !!(projects && projects.length > 0),
+      education: !!(education && education.length > 0),
+      certification: !!(certificates && certificates.length > 0),
+      socialLinks: !!(user.portfolioLinks && user.portfolioLinks.length > 0),
+    };
+
+    return new SuccessResponse(
+      'Onboarding status retrieved successfully',
+      onboardingStatus,
+    ).send(res);
+  }),
+);
+
 export default router;
