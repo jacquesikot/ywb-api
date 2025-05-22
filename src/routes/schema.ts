@@ -170,6 +170,7 @@ export default {
   certificate: {
     create: Joi.object().keys({
       name: Joi.string().required(),
+      certificateFile: Joi.string().required(),
       issuedBy: Joi.string().required(),
       website: Joi.string(),
       yearIssued: Joi.string().required(),
@@ -177,6 +178,7 @@ export default {
     }),
     update: Joi.object().keys({
       name: Joi.string(),
+      certificateFile: Joi.string(),
       issuedBy: Joi.string(),
       website: Joi.string(),
       yearIssued: Joi.string(),
@@ -204,6 +206,7 @@ export default {
       job: Joi.string().required(),
       pricingMode: Joi.string().valid('fixed', 'hourly').required(),
       amount: Joi.number().positive().required(),
+      coverLetter: Joi.string().required(),
       milestones: Joi.array()
         .items(
           Joi.object().keys({

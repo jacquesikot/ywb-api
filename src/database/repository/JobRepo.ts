@@ -19,7 +19,7 @@ async function findById(id: string): Promise<Job | null> {
     .select('+createdAt')
     .populate({
       path: 'user',
-      select: '_id name email bio',
+      select: '_id name email bio profilePicUrl companyName',
       populate: {
         path: 'role',
       },
@@ -48,7 +48,7 @@ async function findAll(filter: any = {}): Promise<Job[]> {
     .select('+createdAt')
     .populate({
       path: 'user',
-      select: '_id name email bio',
+      select: '_id name email bio profilePicUrl companyName',
       populate: {
         path: 'role',
       },
@@ -91,7 +91,7 @@ async function findJobMatch(user: User): Promise<Job[]> {
   })
     .populate({
       path: 'user',
-      select: '_id name email bio',
+      select: '_id name email bio profilePicUrl companyName',
       populate: {
         path: 'role',
       },
@@ -120,7 +120,7 @@ async function findByUserId(
     .select('+createdAt')
     .populate({
       path: 'user',
-      select: '_id name email bio',
+      select: '_id name email bio profilePicUrl companyName',
       populate: {
         path: 'role',
       },

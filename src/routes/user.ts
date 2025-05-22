@@ -15,6 +15,10 @@ import asyncHandler from '../helpers/asyncHandler';
 import validator from '../helpers/validator';
 import schema from './access/schema';
 import WaveRepo from '../database/repository/WaveRepo'; // Import WaveRepo for top talents endpoint
+import EducationRepo from '../database/repository/EducationRepo';
+import WorkHistoryRepo from '../database/repository/WorkHistoryRepo';
+import CertificateRepo from '../database/repository/CertificateRepo';
+import ProjectRepo from '../database/repository/ProjectRepo';
 
 const router = express.Router();
 
@@ -478,12 +482,12 @@ router.get(
     const populatedTopTalents = await Promise.all(
       topTalents.map(async (talent) => {
         // If we've already looked up skill details (through filtering),
-        // use those instead of making another query
         if (talent.skillDetails && talent.skillDetails.length > 0) {
           return {
             ...talent,
             skills: talent.skillDetails,
             skillDetails: undefined,
+            location: talent.location || null, // Ensure location is included
           };
         }
 
@@ -493,10 +497,17 @@ router.get(
             (skillId: Types.ObjectId) => new Types.ObjectId(skillId),
           );
           const skills = await SkillRepo.findByIds(skillIds);
-          return { ...talent, skills };
+          return {
+            ...talent,
+            skills,
+            location: talent.location || null, // Ensure location is included
+          };
         }
 
-        return talent;
+        return {
+          ...talent,
+          location: talent.location || null, // Ensure location is included
+        };
       }),
     );
 
@@ -646,6 +657,151 @@ router.get(
       limit,
       pages,
     }).send(res);
+  }),
+);
+
+/**
+ * @swagger
+ * /user/talents/top-talents/{talentId}:
+ *   get:
+ *     summary: Get detailed information about a specific talent
+ *     tags: [User]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: talentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the talent to retrieve
+ *     responses:
+ *       200:
+ *         description: Talent information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     profilePicUrl:
+ *                       type: string
+ *                     bio:
+ *                       type: string
+ *                     location:
+ *                       type: object
+ *                     skills:
+ *                       type: array
+ *                     workHistory:
+ *                       type: array
+ *                     education:
+ *                       type: array
+ *                     certificates:
+ *                       type: array
+ *                     portfolioLinks:
+ *                       type: array
+ *                     preferredRate:
+ *                       type: number
+ *                     experienceLevel:
+ *                       type: string
+ *                     availability:
+ *                       type: object
+ *                     companyRole:
+ *                       type: string
+ *                     industry:
+ *                       type: string
+ *                     website:
+ *                       type: string
+ *       400:
+ *         description: Bad request - Talent not found
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
+router.get(
+  '/talents/top-talents/:talentId',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const { talentId } = req.params;
+
+    // Validate talentId
+    if (!Types.ObjectId.isValid(talentId)) {
+      throw new BadRequestError('Invalid talent ID');
+    }
+
+    const talentObjectId = new Types.ObjectId(talentId);
+
+    // Get detailed talent information using findById
+    const talent = await UserRepo.findById(talentObjectId);
+
+    if (!talent) {
+      throw new BadRequestError('Talent not found');
+    }
+
+    // Get talent's skills
+    let skills: any[] = [];
+    if (talent.skills && talent.skills.length > 0) {
+      const skillIds = talent.skills.map(
+        (skillId) => new Types.ObjectId(skillId.toString()),
+      );
+      skills = await SkillRepo.findByIds(skillIds);
+    }
+
+    // Get talent's work history
+
+    const workHistory = await WorkHistoryRepo.findByUser(talentObjectId);
+
+    // Get talent's education
+
+    const education = await EducationRepo.findByUser(talentObjectId);
+
+    // Get talent's certificates
+
+    const certificates = await CertificateRepo.findByUser(talentObjectId);
+
+    // Get talent's projects
+    const projects = await ProjectRepo.findByUser(talentObjectId);
+
+    // Prepare the response data
+    const talentData = {
+      _id: talent._id,
+      name: talent.name,
+      email: talent.email,
+      profilePicUrl: talent.profilePicUrl,
+      bio: talent.bio,
+      location: talent.location,
+      skills: skills,
+      workHistory: workHistory,
+      education: education,
+      certificates: certificates,
+      projects: projects,
+      portfolioLinks: talent.portfolioLinks,
+      preferredRate: talent.preferredRate,
+      experienceLevel: talent.experienceLevel,
+      availability: {
+        status: talent.availability?.status || null,
+        hoursPerWeek: talent.availability?.hoursPerWeek || null,
+      },
+      companyRole: talent.companyRole,
+      industry: talent.industry,
+      website: talent.website,
+    };
+
+    return new SuccessResponse(
+      'Talent information retrieved successfully',
+      talentData,
+    ).send(res);
   }),
 );
 

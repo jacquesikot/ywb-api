@@ -18,11 +18,12 @@ export default class FavoriteRepo {
 
   public static async findByUser(user: Types.ObjectId): Promise<Favorite[]> {
     return FavoriteModel.find({ user })
+      .select('+createdAt')
       .populate({
         path: 'job',
         populate: [
           { path: 'skills' },
-          { path: 'user', select: 'name profilePicUrl' },
+          { path: 'user', select: 'name profilePicUrl companyName' },
         ],
       })
       .lean()

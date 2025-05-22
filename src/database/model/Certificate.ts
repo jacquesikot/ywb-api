@@ -7,6 +7,7 @@ export default interface Certificate {
   _id: Types.ObjectId;
   user: Types.ObjectId;
   name: string;
+  certificateFile: string;
   issuedBy: string;
   website?: string;
   yearIssued: string;
@@ -17,6 +18,7 @@ const schema = new Schema<Certificate>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     name: { type: String, required: true },
+    certificateFile: { type: String, required: true },
     issuedBy: { type: String, required: true },
     website: { type: String },
     yearIssued: { type: String, required: true },
