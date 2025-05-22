@@ -21,6 +21,7 @@ export default interface Proposal {
   job: Types.ObjectId;
   pricingMode: string;
   amount: number;
+  coverLetter: string;
   status: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -36,6 +37,10 @@ const schema = new Schema<Proposal>(
       enum: Object.values(PricingMode),
     },
     amount: { type: Number, required: true },
+    coverLetter: {
+      type: String,
+      required: true,
+    },
     status: {
       type: String,
       required: true,
