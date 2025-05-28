@@ -75,16 +75,22 @@ export default {
     chatId: Joi.string().required(),
   }),
   createKYC: Joi.object().keys({
-    taxIdentificationNumber: Joi.string().required(),
+    country: Joi.string().optional(),
+    documentType: Joi.string().optional(),
+    documentUrl: Joi.string().optional(),
+    taxIdentificationNumber: Joi.string().optional(),
     businessAddress: Joi.string(),
     businessLocation: Joi.string(),
     certificateOfIncorporation: Joi.string(),
     businessLicence: Joi.string(),
-    proofOfAddress: Joi.string().required(),
+    proofOfAddress: Joi.string().optional(),
     ownershipAndControlInformation: Joi.string(),
     governmentIssuedId: Joi.string(),
   }),
   updateKYC: Joi.object().keys({
+    country: Joi.string().optional(),
+    documentType: Joi.string().optional(),
+    documentUrl: Joi.string().optional(),
     taxIdentificationNumber: Joi.string(),
     businessAddress: Joi.string(),
     businessLocation: Joi.string(),
@@ -242,6 +248,13 @@ export default {
       status: Joi.string()
         .valid('pending', 'in_progress', 'completed')
         .required(),
+    }),
+  },
+  offer: {
+    create: Joi.object().keys({
+      jobId: Joi.string().required(),
+      freelancerId: Joi.string().required(),
+      message: Joi.string(),
     }),
   },
 };

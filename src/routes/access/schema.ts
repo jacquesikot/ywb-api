@@ -40,6 +40,7 @@ export default {
     name: Joi.string().optional(),
     profilePicUrl: Joi.string().optional().uri(),
     bio: Joi.string().optional(),
+    jobRole: Joi.string().optional(),
     phone: Joi.string()
       .pattern(/^\+?[1-9]\d{1,14}$/) // E.164 international phone number format
       .message(

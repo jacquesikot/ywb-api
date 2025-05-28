@@ -89,6 +89,7 @@ async function findJobMatch(user: User): Promise<Job[]> {
     skills: { $in: skills },
     status: JobStatus.OPEN,
   })
+    .select('+createdAt')
     .populate({
       path: 'user',
       select: '_id name email bio profilePicUrl companyName',

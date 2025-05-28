@@ -52,6 +52,7 @@ export default interface User {
   _id: Types.ObjectId;
   name: string;
   profilePicUrl?: string;
+  jobRole?: string;
   email: string;
   password: string;
   phone?: string;
@@ -100,6 +101,10 @@ const schema = new Schema<User>(
       maxlength: 15,
     },
     profilePicUrl: {
+      type: Schema.Types.String,
+      trim: true,
+    },
+    jobRole: {
       type: Schema.Types.String,
       trim: true,
     },

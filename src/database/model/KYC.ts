@@ -6,14 +6,17 @@ export const COLLECTION_NAME = 'kyc';
 export default interface KYC {
   _id: Types.ObjectId;
   user: Types.ObjectId;
-  taxIdentificationNumber: string;
+  taxIdentificationNumber?: string;
   businessAddress?: string;
   businessLocation?: string;
   certificateOfIncorporation?: string;
   businessLicence?: string;
-  proofOfAddress: string;
+  proofOfAddress?: string;
   ownershipAndControlInformation?: string;
   governmentIssuedId?: string;
+  country?: string;
+  documentType?: string;
+  documentUrl?: string;
   approved: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -26,9 +29,21 @@ const schema = new Schema<KYC>(
       ref: 'User',
       required: true,
     },
+    country: {
+      type: Schema.Types.String,
+      trim: true,
+    },
+    documentType: {
+      type: Schema.Types.String,
+      trim: true,
+    },
+    documentUrl: {
+      type: Schema.Types.String,
+      trim: true,
+    },
     taxIdentificationNumber: {
       type: Schema.Types.String,
-      required: true,
+      required: false,
       trim: true,
     },
     businessAddress: {
@@ -49,7 +64,7 @@ const schema = new Schema<KYC>(
     },
     proofOfAddress: {
       type: Schema.Types.String,
-      required: true,
+      required: false,
       trim: true,
     },
     ownershipAndControlInformation: {

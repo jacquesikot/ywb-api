@@ -19,6 +19,7 @@ import EducationRepo from '../database/repository/EducationRepo';
 import WorkHistoryRepo from '../database/repository/WorkHistoryRepo';
 import CertificateRepo from '../database/repository/CertificateRepo';
 import ProjectRepo from '../database/repository/ProjectRepo';
+import KYCRepo from '../database/repository/KYCRepo';
 
 const router = express.Router();
 
@@ -63,6 +64,8 @@ router.use(authentication);
  *                     type: string
  *                   zipCode:
  *                     type: string
+ *               jobRole:
+ *                 type: string
  *               companyRole:
  *                 type: string
  *               skills:
@@ -134,6 +137,7 @@ router.put(
 
     if (req.body.name) user.name = req.body.name;
     if (req.body.profilePicUrl) user.profilePicUrl = req.body.profilePicUrl;
+    if (req.body.jobRole) user.jobRole = req.body.jobRole;
     if (req.body.phone) user.phone = req.body.phone;
     if (req.body.bio) user.bio = req.body.bio;
     if (req.body.location) user.location = req.body.location;
@@ -863,12 +867,14 @@ router.get(
     const projects = await ProjectRepo.findByUser(userId);
     const education = await EducationRepo.findByUser(userId);
     const certificates = await CertificateRepo.findByUser(userId);
+    const kyc = await KYCRepo.findByUser(userId);
 
     // Determine completion status for each section
     const onboardingStatus = {
       bioRoleLocation: !!(
         user.bio &&
         user.companyRole &&
+        user.jobRole &&
         user.location &&
         Object.keys(user.location).length > 0
       ),
@@ -877,7 +883,7 @@ router.get(
       projects: !!(projects && projects.length > 0),
       education: !!(education && education.length > 0),
       certification: !!(certificates && certificates.length > 0),
-      socialLinks: !!(user.portfolioLinks && user.portfolioLinks.length > 0),
+      kyc: !!kyc,
     };
 
     return new SuccessResponse(
