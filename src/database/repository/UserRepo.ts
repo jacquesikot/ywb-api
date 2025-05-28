@@ -14,7 +14,7 @@ async function findPrivateProfileById(
   id: Types.ObjectId,
 ): Promise<User | null> {
   return UserModel.findOne({ _id: id, status: true })
-    .select('+email +bio +location +availability')
+    .select('+email +bio +location +availability +jobRole')
     .populate({
       path: 'role',
       match: { status: true },
@@ -37,7 +37,7 @@ async function findPrivateProfileById(
 // contains critical information of the user
 async function findById(id: Types.ObjectId): Promise<User | null> {
   return UserModel.findOne({ _id: id, status: true })
-    .select('+email +password +role +bio')
+    .select('+email +password +role +bio +jobRole')
     .populate({
       path: 'role',
       match: { status: true },
@@ -49,7 +49,7 @@ async function findById(id: Types.ObjectId): Promise<User | null> {
 async function findByEmail(email: string): Promise<User | null> {
   return UserModel.findOne({ email: email })
     .select(
-      '+email +password +role +gender +dob +grade +country +state +city +school +bio +hobbies',
+      '+email +password +role +jobRole +gender +dob +grade +country +state +city +school +bio +hobbies',
     )
     .populate({
       path: 'role',
@@ -71,7 +71,7 @@ async function findFieldsById(
 
 async function findPublicProfileById(id: Types.ObjectId): Promise<User | null> {
   return UserModel.findOne({ _id: id, status: true })
-    .select('+bio')
+    .select('+bio +jobRole')
     .lean()
     .exec();
 }
@@ -176,7 +176,7 @@ async function findUsersByRole(
   const users = await UserModel.find(baseQuery)
     .skip(skip)
     .limit(limit)
-    .select('+email +bio +location +availability')
+    .select('+email +bio +location +availability +jobRole')
     .populate({
       path: 'role',
       match: { code: { $in: roles }, status: true },

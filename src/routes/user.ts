@@ -871,15 +871,14 @@ router.get(
 
     // Determine completion status for each section
     const onboardingStatus = {
-      bioRoleLocation: !!(
+      bio: !!(
         user.bio &&
-        user.companyRole &&
         user.jobRole &&
         user.location &&
         Object.keys(user.location).length > 0
       ),
-      skillsTools: !!(user.skills && user.skills.length > 0),
-      workExperience: !!(workHistory && workHistory.length > 0),
+      skills: !!(user.skills && user.skills.length > 0),
+      experience: !!(workHistory && workHistory.length > 0),
       projects: !!(projects && projects.length > 0),
       education: !!(education && education.length > 0),
       certification: !!(certificates && certificates.length > 0),
