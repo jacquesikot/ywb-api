@@ -26,6 +26,7 @@ import wave from './wave';
 import proposal from './proposal';
 import workHistory from './workHistory';
 import certificate from './certificate';
+import offer from './offer';
 
 const router = express.Router();
 router.use('/reset-password', resetPassword);
@@ -60,6 +61,7 @@ router.use('/kyc', permission(Permission.GENERAL), kyc);
 router.use('/project', permission(Permission.GENERAL), project);
 router.use('/subscription', permission(Permission.GENERAL), subscription);
 router.use('/proposal', permission(Permission.GENERAL), proposal);
+router.use('/offer', permission(Permission.GENERAL), offer);
 
 // Admin routes
 router.use('/admin/apiKey', permission(Permission.ADMIN), adminApiKey);

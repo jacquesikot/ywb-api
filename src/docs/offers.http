@@ -1,0 +1,53 @@
+### Variables
+@baseUrl = http://localhost:3002
+@authToken = eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ5b3Vyd29ya2J1ZGR5LmNvbSIsInN1YiI6IjY4MjAwOWUwYWQxYTIzNWFiNzlhZTk0ZCIsImlzcyI6ImFwaS55b3Vyd29ya2J1ZGR5LmNvbSIsImlhdCI6MTc0ODAxODMxMSwiZXhwIjoxNzQ4MTkxMTExLCJwcm0iOiIxYWIwMjM1NTdjZTZmMjY5ZTdlMzY2ZGQxYThiNzU0MTc5MmIwNjM3NjIwZTUxNTNmMDkzYjE1YjU5MjQ3Yjg5YWYyNmVhYWE1YzRiN2E4MTQwODI1MDNiZmMwMGFkYTMwMTRkMTBmYWMyZDJhMzNlNTcwNDkyMmMyZDIxOGZhMyJ9.WCswMtYxoinv5bpsSwa_hlz1kHBCKuiwsRd2gPcQBF6IEwbh-oAxrbA2cwVCyCFUR-Q96c9DHvpR5c-JIsXxiJgBBwHkYIBSopiETSirkGEdCO4Wh0hW2084SMccwrabae89FU0TzuNhCpqU3S0EA_gyoDUKUOusMXP0lMVc5VY_pIK-m9yaO8LKJQ-o_nizfOFfd5jUryMcTb3o-baqkuIHaI0aOH1zfmjWTOclChnrgtRnDMNCFAu6MukVjJFt09rGy4aYvOEvY3ZcxZCnZv12RW24W_nu6Y8Lmw7rqIByqtLM2OZiWquXbgZolFY3m6jR6v-SaUfx6GqlUZWZdvenCaZnIwlc3GmHDnMyRQrdVJEwU49WxJD2IwwFtL6XFrBiSVg8loxe2OwE6oODPzXKXXL1wE0p3OIAegF5JPIelxeDks1P5Rk1tKYlJl-F4pu9nB1wmBx4Pw_dx9Gz4_fsNktw14On-4rF4cJDXzQtBPG0pQtCEL_BkcGgBIBj9s_sJffbwW5_yIhQ8UJzCdqeI2i3Vr3YDv0ml15p0eUmHH6WTUFh8u6SV0qAS-f0FSCoHM7icBhc8NJ9EOIphKqXc2ZddhSkJfOKVZ7ryF4qkmf3qmUNkDVdWhous2qwnaypWCRPww754y3uQ5hpSke2W5JoPxN5xZLiAE91vP8
+@api-key = da76b42eac9a7f4865a08ae8e6f11bf372a162a9d0e1a2990898ba8296e3433d
+
+### Create a new job offer (BUSINESS only)
+POST {{baseUrl}}/offer/create
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+x-api-key: {{api-key}}
+
+{
+    "jobId": "68125876532c94e337adf8a6",
+    "freelancerId": "682b3b58c3d9fe86d03bf0cb"
+}
+
+### List all offers for the authenticated user
+GET {{baseUrl}}/offer/list
+Authorization: Bearer {{authToken}}
+x-api-key: {{api-key}}
+
+### List offers with status filter
+GET {{baseUrl}}/offer/list?status=PENDING
+Authorization: Bearer {{authToken}}
+x-api-key: {{api-key}}
+
+### Accept an offer (FREELANCER only)
+POST {{baseUrl}}/offer/68306db55f3754b1f75f4884/accept
+Authorization: Bearer {{authToken}}
+x-api-key: {{api-key}}
+
+### Decline an offer (FREELANCER only)
+POST {{baseUrl}}/offer/65f1a2b3c4d5e6f7g8h9i0j3/decline
+Authorization: Bearer {{authToken}}
+x-api-key: {{api-key}}
+
+### Check if an offer already exists
+GET {{baseUrl}}/offer/check?jobId=68125876532c94e337adf8a6&freelancerId=682009e0ad1a235ab79ae94d
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+x-api-key: {{api-key}}
+
+
+### Withdraw an offer (BUSINESS only)
+POST {{baseUrl}}/offer/withdraw
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+x-api-key: {{api-key}}
+
+{
+    "jobId": "68125876532c94e337adf8a6",
+    "freelancerId": "682009e0ad1a235ab79ae94d"
+}

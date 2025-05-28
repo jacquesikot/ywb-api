@@ -8,6 +8,7 @@ import KYCRepo from '../database/repository/KYCRepo';
 import asyncHandler from '../helpers/asyncHandler';
 import validator from '../helpers/validator';
 import schema from './schema';
+import { RoleCode } from '../database/model/Role';
 
 const router = express.Router();
 
@@ -74,21 +75,35 @@ router.post(
     const exists = await KYCRepo.exists(userId);
     if (exists) throw new BadRequestError('User already has a KYC record');
 
-    const kyc = await KYCRepo.create({
-      _id: new Types.ObjectId(),
-      user: userId,
-      taxIdentificationNumber: req.body.taxIdentificationNumber,
-      businessAddress: req.body.businessAddress,
-      businessLocation: req.body.businessLocation,
-      certificateOfIncorporation: req.body.certificateOfIncorporation,
-      businessLicence: req.body.businessLicence,
-      proofOfAddress: req.body.proofOfAddress,
-      ownershipAndControlInformation: req.body.ownershipAndControlInformation,
-      governmentIssuedId: req.body.governmentIssuedId,
-      approved: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    let kyc;
+    if (req.user.role.code === RoleCode.FREELANCER) {
+      kyc = await KYCRepo.create({
+        _id: new Types.ObjectId(),
+        user: userId,
+        country: req.body.country,
+        documentType: req.body.documentType,
+        documentUrl: req.body.documentUrl,
+        approved: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    } else {
+      kyc = await KYCRepo.create({
+        _id: new Types.ObjectId(),
+        user: userId,
+        taxIdentificationNumber: req.body.taxIdentificationNumber,
+        businessAddress: req.body.businessAddress,
+        businessLocation: req.body.businessLocation,
+        certificateOfIncorporation: req.body.certificateOfIncorporation,
+        businessLicence: req.body.businessLicence,
+        proofOfAddress: req.body.proofOfAddress,
+        ownershipAndControlInformation: req.body.ownershipAndControlInformation,
+        governmentIssuedId: req.body.governmentIssuedId,
+        approved: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
 
     return new SuccessResponse('KYC record created successfully', kyc).send(
       res,
