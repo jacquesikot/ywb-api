@@ -10,6 +10,8 @@ import { NotificationType } from '../database/model/Notification';
 import asyncHandler from '../helpers/asyncHandler';
 import validator from '../helpers/validator';
 import schema from './schema';
+import { Types } from 'mongoose';
+import { MessageType } from '../database/model/Message';
 
 const router = express.Router();
 
@@ -26,10 +28,9 @@ router.use(authentication);
  * @swagger
  * /message/send:
  *   post:
- *     summary: Send a new message in a chat
+ *     summary: Send a message in a chat
  *     tags: [Messages]
  *     security:
- *       - apiKey: []
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
@@ -43,65 +44,68 @@ router.use(authentication);
  *             properties:
  *               chatId:
  *                 type: string
- *                 description: ID of the chat the message belongs to
  *               content:
  *                 type: string
- *                 description: Message content
  *     responses:
  *       200:
  *         description: Message sent successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 statusCode:
- *                   type: string
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     message:
- *                       $ref: '#/components/schemas/Message'
- *       400:
- *         description: Bad request - Missing required fields
- *       404:
- *         description: Not found - Chat not found
- *       401:
- *         description: Unauthorized - Invalid token
  */
 router.post(
   '/send',
   validator(schema.sendMessage),
   asyncHandler(async (req: ProtectedRequest, res) => {
-    const { chatId, content } = req.body;
+    const {
+      chatId,
+      content,
+      type,
+      audioUrl,
+      imageUrl,
+      videoUrl,
+      fileUrl,
+      fileName,
+      fileSize,
+      fileType,
+      fileExtension,
+    } = req.body;
     const userId = req.user._id;
 
-    // Verify chat exists and user is a member
     const chat = await ChatRepo.findById(chatId);
     if (!chat) throw new NotFoundError('Chat not found');
 
-    if (
-      !chat.members.some((member) => member.toString() === userId.toString())
-    ) {
-      throw new BadRequestError('You are not a member of this chat');
-    }
-
-    // Create message
-    const messageData = {
-      chatId,
-      userId,
+    // Create message in database
+    const message = await MessageRepo.create({
+      chatId: new Types.ObjectId(chatId),
+      userId: userId,
       content,
+      type,
+      audioUrl,
+      imageUrl,
+      videoUrl,
+      fileUrl,
+      fileName,
+      fileType: type === MessageType.TEXT ? 'text/plain' : fileType,
       timestamp: new Date(),
       isRead: false,
-    };
+      fileSize,
+      fileExtension,
+    });
 
-    const message = await MessageRepo.create(messageData);
+    // Emit message through Socket.IO
+    const socketService = (global as any).socketService;
+    if (socketService) {
+      socketService.emitToChat(chatId, 'new_message', {
+        _id: message._id,
+        chatId: message.chatId,
+        userId: message.userId,
+        content: message.content,
+        timestamp: message.timestamp,
+        isRead: message.isRead,
+      });
+    }
 
-    // Create notifications for other chat members
+    // Create notification for other chat members
     const otherMembers = chat.members.filter(
-      (memberId) => memberId.toString() !== userId.toString(),
+      (member) => member.toString() !== userId.toString(),
     );
 
     for (const memberId of otherMembers) {
@@ -112,14 +116,23 @@ router.post(
         data: {
           chatId,
           messageId: message._id,
-          content:
-            content.substring(0, 50) + (content.length > 50 ? '...' : ''),
-          senderId: userId,
         },
       });
+
+      // Emit notification through Socket.IO
+      if (socketService) {
+        socketService.emitToUser(memberId.toString(), 'notification', {
+          type: NotificationType.NEW_MESSAGE,
+          message: `New message in chat`,
+          data: {
+            chatId,
+            messageId: message._id,
+          },
+        });
+      }
     }
 
-    new SuccessResponse('Message sent successfully', { message }).send(res);
+    return new SuccessResponse('Message sent successfully', message).send(res);
   }),
 );
 

@@ -15,6 +15,7 @@ export default interface Wave {
   freelancerId: Types.ObjectId;
   status: WaveStatus;
   createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const schema = new Schema<Wave>(
@@ -36,6 +37,10 @@ const schema = new Schema<Wave>(
       required: true,
     },
     createdAt: {
+      type: Schema.Types.Date,
+      default: Date.now,
+    },
+    updatedAt: {
       type: Schema.Types.Date,
       default: Date.now,
     },

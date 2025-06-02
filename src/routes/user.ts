@@ -785,6 +785,7 @@ router.get(
       profilePicUrl: talent.profilePicUrl,
       bio: talent.bio,
       location: talent.location,
+      jobRole: talent.jobRole,
       skills: skills,
       workHistory: workHistory,
       education: education,

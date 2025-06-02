@@ -18,6 +18,7 @@ import validator from '../helpers/validator';
 import schema from './schema';
 import UserWaveRepo from '../database/repository/UserWaveRepo';
 import { Types } from 'mongoose';
+import { capitalize } from '../utils/capitalize';
 
 const router = express.Router();
 
@@ -204,9 +205,11 @@ router.get(
     const populatedWaves = await Promise.all(
       [...mySentWaves, ...myReceivedWaves].map(async (wave) => {
         const job = await JobRepo.findById(wave.jobId.toString());
+        const freelancerDetails = await UserRepo.findById(wave.freelancerId);
         return {
           ...wave,
           job,
+          freelancer: freelancerDetails,
         };
       }),
     );
@@ -286,9 +289,9 @@ router.get(
 
 /**
  * @swagger
- * /wave/update-status/{id}:
+ * /wave/accept/{id}:
  *   put:
- *     summary: Update wave status (accept or reject)
+ *     summary: Accept a wave
  *     tags: [Waves]
  *     security:
  *       - apiKey: []
@@ -300,22 +303,9 @@ router.get(
  *         schema:
  *           type: string
  *         description: Wave ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - status
- *             properties:
- *               status:
- *                 type: string
- *                 enum: [waved, accepted, rejected]
- *                 description: New status for the wave
  *     responses:
  *       200:
- *         description: Wave status updated successfully
+ *         description: Wave accepted successfully
  *         content:
  *           application/json:
  *             schema:
@@ -331,18 +321,16 @@ router.get(
  *                     wave:
  *                       $ref: '#/components/schemas/Wave'
  *       400:
- *         description: Bad request - Invalid status
+ *         description: Bad request - Not authorized to accept this wave
  *       404:
  *         description: Not found - Wave not found
  *       401:
- *         description: Unauthorized - Invalid token or not authorized to update this wave
+ *         description: Unauthorized - Invalid token
  */
 router.put(
-  '/update-status/:id',
-  validator(schema.updateWaveStatus),
+  '/accept/:id',
   asyncHandler(async (req: ProtectedRequest, res) => {
     const waveId = req.params.id;
-    const { status } = req.body;
     const userId = req.user._id;
 
     // Check if the wave exists
@@ -353,41 +341,38 @@ router.put(
     const job = await JobRepo.findById(wave.jobId.toString());
     if (!job) throw new NotFoundError('Job not found');
 
-    // Check if the user is authorized to update the wave status
-    // Only job owner can update wave status
+    // Check if the user is authorized to accept the wave
     if (job.user._id.toString() !== userId.toString()) {
-      throw new BadRequestError('Not authorized to update this wave');
+      throw new BadRequestError('Not authorized to accept this wave');
     }
 
-    // Update the wave status
+    // Update the wave status to accepted
     const updatedWave = await WaveRepo.updateStatusById(
       waveId,
-      status as WaveStatus,
+      WaveStatus.ACCEPTED,
     );
-    if (!updatedWave) throw new NotFoundError('Failed to update wave status');
 
     // Get freelancer details for notifications
     const freelancer = await UserRepo.findById(wave.freelancerId);
     if (!freelancer) throw new NotFoundError('Freelancer not found');
 
-    // If status is changed to accepted, create a new chat and notification
-    if (status === WaveStatus.ACCEPTED) {
-      // Create notification for freelancer about acceptance
-      await NotificationRepo.create({
-        type: NotificationType.NEW_WAVE,
-        userId: freelancer._id,
-        message: `Your wave for ${job.title} has been accepted by ${req.user.name}`,
-        data: {
-          waveId: wave._id,
-          jobId: job._id,
-          userId: freelancer._id.toString(),
-        },
-      });
+    // Create notification for freelancer about acceptance
+    await NotificationRepo.create({
+      type: NotificationType.NEW_WAVE,
+      userId: freelancer._id,
+      message: `Your wave for ${capitalize(job.title)} has been accepted by ${req.user.name}`,
+      data: {
+        waveId: wave._id,
+        jobId: job._id,
+        userId: freelancer._id.toString(),
+      },
+    });
 
-      // Check if chat already exists
-      const existingChat = await ChatRepo.findByWaveId(waveId);
+    // Check if chat already exists
+    const existingChat = await ChatRepo.findByWaveId(waveId);
 
-      if (!existingChat) {
+    if (!existingChat) {
+      try {
         // Create a new chat for communication
         const newChat = await ChatRepo.create({
           jobId: job._id,
@@ -399,7 +384,7 @@ router.put(
         // Add initial message to the chat
         await MessageRepo.create({
           chatId: newChat._id,
-          content: `Application accepted. You can now discuss the job "${job.title}" here.`,
+          content: `Application accepted. You can now discuss the job "${capitalize(job.title)}" here.`,
           userId: job.user._id,
         });
 
@@ -407,29 +392,111 @@ router.put(
         await NotificationRepo.create({
           type: NotificationType.CHAT_CREATED,
           userId: freelancer._id,
-          message: `A new chat has been created for the job "${job.title}"`,
+          message: `A new chat has been created for the job "${capitalize(job.title)}"`,
           data: {
             chatId: newChat._id,
             jobId: job._id,
             waveId: wave._id,
           },
         });
+      } catch (error: any) {
+        // If chat creation fails due to duplicate key, we can ignore it
+        // as it means a chat already exists for these users
+        if (error.code !== 11000) {
+          throw error;
+        }
       }
-    } else if (status === WaveStatus.REJECTED) {
-      // Create notification for freelancer about rejection
-      await NotificationRepo.create({
-        type: NotificationType.NEW_WAVE,
-        userId: freelancer._id,
-        message: `Your wave for ${job.title} has been rejected`,
-        data: {
-          waveId: wave._id,
-          jobId: job._id,
-          userId: freelancer._id.toString(),
-        },
-      });
     }
 
-    new SuccessResponse('Wave status updated successfully', {
+    new SuccessResponse('Wave accepted successfully', {
+      wave: updatedWave,
+    }).send(res);
+  }),
+);
+
+/**
+ * @swagger
+ * /wave/reject/{id}:
+ *   put:
+ *     summary: Reject a wave
+ *     tags: [Waves]
+ *     security:
+ *       - apiKey: []
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Wave ID
+ *     responses:
+ *       200:
+ *         description: Wave rejected successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     wave:
+ *                       $ref: '#/components/schemas/Wave'
+ *       400:
+ *         description: Bad request - Not authorized to reject this wave
+ *       404:
+ *         description: Not found - Wave not found
+ *       401:
+ *         description: Unauthorized - Invalid token
+ */
+router.put(
+  '/reject/:id',
+  asyncHandler(async (req: ProtectedRequest, res) => {
+    const waveId = req.params.id;
+    const userId = req.user._id;
+
+    // Check if the wave exists
+    const wave = await WaveRepo.findById(waveId);
+    if (!wave) throw new NotFoundError('Wave not found');
+
+    // Get job details
+    const job = await JobRepo.findById(wave.jobId.toString());
+    if (!job) throw new NotFoundError('Job not found');
+
+    // Check if the user is authorized to reject the wave
+    if (job.user._id.toString() !== userId.toString()) {
+      throw new BadRequestError('Not authorized to reject this wave');
+    }
+
+    // Update the wave status to rejected
+    const updatedWave = await WaveRepo.updateStatusById(
+      waveId,
+      WaveStatus.REJECTED,
+    );
+    if (!updatedWave) throw new NotFoundError('Failed to reject wave');
+
+    // Get freelancer details for notifications
+    const freelancer = await UserRepo.findById(wave.freelancerId);
+    if (!freelancer) throw new NotFoundError('Freelancer not found');
+
+    // Create notification for freelancer about rejection
+    await NotificationRepo.create({
+      type: NotificationType.NEW_WAVE,
+      userId: freelancer._id,
+      message: `Your wave for ${capitalize(job.title)} has been rejected`,
+      data: {
+        waveId: wave._id,
+        jobId: job._id,
+        userId: freelancer._id.toString(),
+      },
+    });
+
+    new SuccessResponse('Wave rejected successfully', {
       wave: updatedWave,
     }).send(res);
   }),
