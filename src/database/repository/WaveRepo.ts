@@ -50,13 +50,20 @@ async function updateStatusById(
   id: string,
   status: WaveStatus,
 ): Promise<Wave | null> {
-  return WaveModel.findByIdAndUpdate(
+  const updatedWave = await WaveModel.findByIdAndUpdate(
     id,
-    { status, createdAt: new Date() },
+    {
+      $set: {
+        status,
+        updatedAt: new Date(),
+      },
+    },
     { new: true },
   )
     .lean()
     .exec();
+
+  return updatedWave;
 }
 
 async function findAll(): Promise<Wave[]> {
@@ -170,7 +177,7 @@ async function findTopFreelancersByWaves(
         profilePicUrl: '$user.profilePicUrl',
         bio: '$user.bio',
         location: '$user.location',
-        role: '$role',
+        jobRole: '$user.jobRole',
         waveCount: 1,
         skills: '$user.skills',
         skillDetails: 1,

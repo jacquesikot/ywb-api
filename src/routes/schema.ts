@@ -10,6 +10,7 @@ import {
   SubscriptionPlan,
 } from '../database/model/Subscription';
 import { WaveStatus } from '../database/model/Wave';
+import { MessageType } from '../database/model/Message';
 
 export default {
   createJob: Joi.object().keys({
@@ -67,6 +68,23 @@ export default {
   sendMessage: Joi.object().keys({
     chatId: Joi.string().required(),
     content: Joi.string().min(1).required(),
+    type: Joi.string()
+      .valid(
+        MessageType.TEXT,
+        MessageType.IMAGE,
+        MessageType.AUDIO,
+        MessageType.VIDEO,
+        MessageType.FILE,
+      )
+      .required(),
+    audioUrl: Joi.string().optional(),
+    imageUrl: Joi.string().optional(),
+    videoUrl: Joi.string().optional(),
+    fileUrl: Joi.string().optional(),
+    fileName: Joi.string().optional(),
+    fileType: Joi.string().optional(),
+    fileSize: Joi.number().optional(),
+    fileExtension: Joi.string().optional(),
   }),
   addChatMembers: Joi.object().keys({
     memberIds: Joi.array().items(Joi.string().required()).min(1).required(),

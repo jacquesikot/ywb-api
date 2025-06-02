@@ -5,12 +5,14 @@ import { BadRequestError, NotFoundError } from '../core/ApiError';
 import { SuccessResponse } from '../core/ApiResponse';
 import { NotificationType } from '../database/model/Notification';
 import ChatRepo from '../database/repository/ChatRepo';
+import JobRepo from '../database/repository/JobRepo';
 import MessageRepo from '../database/repository/MessageRepo';
 import NotificationRepo from '../database/repository/NotificationRepo';
 import UserRepo from '../database/repository/UserRepo';
 import asyncHandler from '../helpers/asyncHandler';
 import validator from '../helpers/validator';
 import schema from './schema';
+
 const router = express.Router();
 
 /**
@@ -160,6 +162,7 @@ router.get(
   asyncHandler(async (req: ProtectedRequest, res) => {
     const userId = req.user._id.toString();
     const chats = await ChatRepo.findByMemberId(userId);
+
     new SuccessResponse('Chats retrieved successfully', chats).send(res);
   }),
 );
