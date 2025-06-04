@@ -2,6 +2,15 @@ import mongoose from 'mongoose';
 import { db } from '../config';
 import Logger from '../core/Logger';
 import { ApiKeyModel, DOCUMENT_NAME } from './model/ApiKey';
+import {
+  RoleModel,
+  DOCUMENT_NAME as ROLE_DOCUMENT_NAME,
+  RoleCode,
+} from './model/Role';
+import {
+  SkillModel,
+  DOCUMENT_NAME as SKILL_DOCUMENT_NAME,
+} from './model/Skill';
 
 // Seed document
 const seedApiKey = {
@@ -14,6 +23,60 @@ const seedApiKey = {
   createdAt: new Date(parseInt('1726650649487')), // Convert timestamp to Date
   updatedAt: new Date(parseInt('1726650649487')),
 };
+
+// Seed roles
+const seedRoles = [
+  {
+    code: RoleCode.CLIENT,
+    status: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    code: RoleCode.BUSINESS,
+    status: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    code: RoleCode.FREELANCER,
+    status: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
+
+// Seed skills
+const seedSkills = [
+  {
+    name: 'FRONTEND',
+    slug: 'frontend',
+    description: '',
+    createdAt: new Date('2025-04-28T17:11:28.745Z'),
+    updatedAt: new Date('2025-04-28T17:11:28.745Z'),
+  },
+  {
+    name: 'BACKEND',
+    slug: 'backend',
+    description: '',
+    createdAt: new Date('2025-04-28T17:11:34.988Z'),
+    updatedAt: new Date('2025-04-28T17:11:34.988Z'),
+  },
+  {
+    name: 'PROJECT MANAGEMENT',
+    slug: 'project-management',
+    description: '',
+    createdAt: new Date('2025-04-28T17:11:46.966Z'),
+    updatedAt: new Date('2025-04-28T17:11:46.966Z'),
+  },
+  {
+    name: 'UI',
+    slug: 'ui',
+    description: '',
+    createdAt: new Date('2025-04-28T17:11:55.373Z'),
+    updatedAt: new Date('2025-04-28T17:11:55.373Z'),
+  },
+];
 
 // Function to check and seed the database
 const seedDatabase = async () => {
@@ -29,6 +92,40 @@ const seedDatabase = async () => {
     }
   } catch (error) {
     Logger.error('Error seeding database:', error);
+  }
+};
+
+// Function to seed roles
+const seedRolesDatabase = async () => {
+  try {
+    const count = await RoleModel.countDocuments();
+    if (count === 0) {
+      await RoleModel.insertMany(seedRoles);
+      Logger.info(`Seed data inserted in ${ROLE_DOCUMENT_NAME} collection.`);
+    } else {
+      Logger.info(
+        `${ROLE_DOCUMENT_NAME} collection already contains data. No seeding needed.`,
+      );
+    }
+  } catch (error) {
+    Logger.error('Error seeding roles database:', error);
+  }
+};
+
+// Function to seed skills
+const seedSkillsDatabase = async () => {
+  try {
+    const count = await SkillModel.countDocuments();
+    if (count === 0) {
+      await SkillModel.insertMany(seedSkills);
+      Logger.info(`Seed data inserted in ${SKILL_DOCUMENT_NAME} collection.`);
+    } else {
+      Logger.info(
+        `${SKILL_DOCUMENT_NAME} collection already contains data. No seeding needed.`,
+      );
+    }
+  } catch (error) {
+    Logger.error('Error seeding skills database:', error);
   }
 };
 
@@ -65,6 +162,8 @@ mongoose
   .connect(dbURI, options)
   .then(() => {
     seedDatabase();
+    seedRolesDatabase();
+    seedSkillsDatabase();
     Logger.info('Mongoose connection done');
   })
   .catch((e) => {
