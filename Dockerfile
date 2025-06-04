@@ -16,11 +16,17 @@ COPY package*.json ./
 # Install ALL dependencies (including dev dependencies) for build
 RUN npm ci
 
+# Install rimraf globally (used in clean script but not in package.json)
+RUN npm install -g rimraf
+
 # Copy source code
 COPY . .
 
-# Build TypeScript code
-RUN npm run build
+# Build TypeScript code using npx to ensure commands are found
+RUN npx tsc && \
+    npx cpx "keys/**/*" build/keys && \
+    npx cpx "src/public/**/*" build/src/public && \
+    npx cpx "src/views/**/*" build/src/views
 
 # Remove dev dependencies to reduce image size
 RUN npm ci --only=production && npm cache clean --force
