@@ -44,6 +44,10 @@ const schema = new Schema<Chat>(
   },
 );
 
-schema.index({ ownerId: 1, members: 1 }, { unique: true });
+// Drop the old index if it exists
+schema.index({ ownerId: 1, members: 1 }, { unique: false });
+
+// Create a new compound index that includes jobId and waveId
+schema.index({ ownerId: 1, members: 1, jobId: 1, waveId: 1 }, { unique: true });
 
 export const ChatModel = model<Chat>(DOCUMENT_NAME, schema, COLLECTION_NAME);

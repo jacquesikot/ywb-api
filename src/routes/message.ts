@@ -83,7 +83,12 @@ router.post(
       videoUrl,
       fileUrl,
       fileName,
-      fileType: type === MessageType.TEXT ? 'text/plain' : fileType,
+      fileType:
+        type === MessageType.TEXT
+          ? 'text/plain'
+          : fileExtension?.toLowerCase() === 'pdf'
+            ? 'text/pdf'
+            : fileType,
       timestamp: new Date(),
       isRead: false,
       fileSize,

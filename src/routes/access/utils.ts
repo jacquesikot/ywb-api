@@ -16,6 +16,7 @@ export async function getUserData(user: User) {
     'profilePicUrl',
     'businessType',
     'bio',
+    'walletBalance',
   ];
 
   const data = _.pick(user, fields);

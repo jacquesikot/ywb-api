@@ -18,7 +18,8 @@ import validator from '../helpers/validator';
 import schema from './schema';
 import UserWaveRepo from '../database/repository/UserWaveRepo';
 import { Types } from 'mongoose';
-import { capitalize } from '../utils/capitalize';
+import { MessageType } from '../database/model/Message';
+import { NotificationStatus } from '../database/model/Notification';
 
 const router = express.Router();
 
@@ -360,7 +361,7 @@ router.put(
     await NotificationRepo.create({
       type: NotificationType.NEW_WAVE,
       userId: freelancer._id,
-      message: `Your wave for ${capitalize(job.title)} has been accepted by ${req.user.name}`,
+      message: `Your wave for ${job.title} has been accepted by ${req.user.name}`,
       data: {
         waveId: wave._id,
         jobId: job._id,
@@ -379,32 +380,56 @@ router.put(
           waveId: wave._id,
           ownerId: job.user._id,
           members: [job.user._id, freelancer._id],
+          createdAt: new Date(),
         });
+
+        if (!newChat) {
+          throw new Error('Failed to create chat');
+        }
 
         // Add initial message to the chat
-        await MessageRepo.create({
+        const message = await MessageRepo.create({
           chatId: newChat._id,
-          content: `Application accepted. You can now discuss the job "${capitalize(job.title)}" here.`,
+          content: `Application accepted. You can now discuss the job "${job.title}" here.`,
           userId: job.user._id,
+          type: MessageType.TEXT,
+          timestamp: new Date(),
+          isRead: false,
         });
 
+        if (!message) {
+          throw new Error('Failed to create initial message');
+        }
+
         // Notify freelancer about the new chat
-        await NotificationRepo.create({
+        const notification = await NotificationRepo.create({
           type: NotificationType.CHAT_CREATED,
           userId: freelancer._id,
-          message: `A new chat has been created for the job "${capitalize(job.title)}"`,
+          message: `A new chat has been created for the job "${job.title}"`,
           data: {
             chatId: newChat._id,
             jobId: job._id,
             waveId: wave._id,
           },
+          status: NotificationStatus.UNREAD,
         });
+
+        if (!notification) {
+          throw new Error('Failed to create notification');
+        }
       } catch (error: any) {
+        // Log the error for debugging
+        console.error('Error in chat creation:', error);
+
         // If chat creation fails due to duplicate key, we can ignore it
         // as it means a chat already exists for these users
-        if (error.code !== 11000) {
-          throw error;
+        if (error.code === 11000) {
+          console.log('Chat already exists for these users');
+          return;
         }
+
+        // For other errors, throw them to be handled by the caller
+        throw new Error(`Failed to create chat: ${error.message}`);
       }
     }
 
@@ -488,7 +513,7 @@ router.put(
     await NotificationRepo.create({
       type: NotificationType.NEW_WAVE,
       userId: freelancer._id,
-      message: `Your wave for ${capitalize(job.title)} has been rejected`,
+      message: `Your wave for ${job.title} has been rejected`,
       data: {
         waveId: wave._id,
         jobId: job._id,

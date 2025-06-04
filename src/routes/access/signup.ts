@@ -56,6 +56,9 @@ const router = express.Router();
  *                 type: string
  *                 enum: [ADMIN, EMPLOYER, FREELANCER]
  *                 description: User's role in the system
+ *               walletBalance:
+ *                 type: number
+ *                 description: User's wallet balance
  *     responses:
  *       200:
  *         description: Signup successful
@@ -86,6 +89,8 @@ const router = express.Router();
  *                           type: string
  *                         profilePicUrl:
  *                           type: string
+ *                         walletBalance:
+ *                           type: number
  *                     tokens:
  *                       type: object
  *                       properties:
@@ -115,6 +120,7 @@ router.post(
         email: req.body.email,
         profilePicUrl: req.body.profilePicUrl,
         password: passwordHash,
+        walletBalance: 0,
       } as User,
       accessTokenKey,
       refreshTokenKey,

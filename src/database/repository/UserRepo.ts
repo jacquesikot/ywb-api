@@ -1,4 +1,4 @@
-import User, { UserModel } from '../model/User';
+import User, { UserModel, Plan, PlanType } from '../model/User';
 import { RoleModel } from '../model/Role';
 import { InternalError } from '../../core/ApiError';
 import { Types } from 'mongoose';
@@ -219,8 +219,13 @@ async function create(
 
   user.role = { _id: role._id, code: role.code };
   user.createdAt = user.updatedAt = now;
+  user.walletBalance = 0; // Explicitly set walletBalance to 0
+  user.plan = Plan.FREE;
+  user.planType = PlanType.MONTHLY;
 
+  console.log('user', user);
   const createdUser = await UserModel.create(user);
+  console.log('createdUser', createdUser);
   const keystore = await KeystoreRepo.create(
     createdUser,
     accessTokenKey,
@@ -285,8 +290,9 @@ async function createGoogleUser({
     status: true,
     createdAt: now,
     updatedAt: now,
-    plan: 'FREE',
-    planType: 'MONTHLY',
+    plan: Plan.FREE,
+    planType: PlanType.MONTHLY,
+    walletBalance: 0, // Explicitly set walletBalance to 0
   });
   return user.toObject();
 }
