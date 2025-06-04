@@ -22,11 +22,27 @@ RUN npm install -g rimraf
 # Copy source code
 COPY . .
 
-# Build TypeScript code using npx to ensure commands are found
-RUN npx tsc && \
-    npx cpx "keys/**/*" build/keys && \
-    npx cpx "src/public/**/*" build/src/public && \
-    npx cpx "src/views/**/*" build/src/views
+# Clean any existing build directory
+RUN rimraf ./build
+
+# Build TypeScript code step by step
+RUN npx tsc
+
+# Copy additional files (create directories if they don't exist and handle empty directories)
+RUN mkdir -p build/keys && \
+    if [ "$(ls -A keys 2>/dev/null)" ]; then \
+        npx cpx "keys/**/*" build/keys; \
+    fi
+
+RUN mkdir -p build/src/public && \
+    if [ "$(ls -A src/public 2>/dev/null)" ]; then \
+        npx cpx "src/public/**/*" build/src/public; \
+    fi
+
+RUN mkdir -p build/src/views && \
+    if [ "$(ls -A src/views 2>/dev/null)" ]; then \
+        npx cpx "src/views/**/*" build/src/views; \
+    fi
 
 # Remove dev dependencies to reduce image size
 RUN npm ci --only=production && npm cache clean --force
