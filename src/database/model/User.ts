@@ -65,6 +65,7 @@ export default interface User {
     zipCode?: string;
   };
   role: Role;
+  walletBalance: number;
   companyRole?: string;
   verified?: boolean;
   status?: boolean;
@@ -150,6 +151,12 @@ const schema = new Schema<User>(
     role: {
       type: Schema.Types.ObjectId,
       ref: 'Role',
+    },
+    walletBalance: {
+      type: Schema.Types.Number,
+      default: 0,
+      required: true,
+      min: 0,
     },
     companyRole: {
       type: Schema.Types.String,
@@ -251,6 +258,7 @@ const schema = new Schema<User>(
 schema.index({ _id: 1, status: 1 });
 schema.index({ phone: 1 }, { unique: true, sparse: true });
 schema.index({ skills: 1 });
+schema.index({ walletBalance: 1 });
 schema.index({ experienceLevel: 1 });
 schema.index({ availability: 1 });
 schema.index({ industry: 1 });
