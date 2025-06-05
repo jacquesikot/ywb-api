@@ -1,3 +1,4 @@
+import { MessageType } from './../database/model/Message';
 import { ProtectedRequest } from 'app-request';
 import express from 'express';
 import authentication from '../auth/authentication';
@@ -11,7 +12,6 @@ import asyncHandler from '../helpers/asyncHandler';
 import validator from '../helpers/validator';
 import schema from './schema';
 import { Types } from 'mongoose';
-import { MessageType } from '../database/model/Message';
 
 const router = express.Router();
 
@@ -83,12 +83,7 @@ router.post(
       videoUrl,
       fileUrl,
       fileName,
-      fileType:
-        type === MessageType.TEXT
-          ? 'text/plain'
-          : fileExtension?.toLowerCase() === 'pdf'
-            ? 'text/pdf'
-            : fileType,
+      fileType: type === MessageType.TEXT ? 'text/plain' : fileType,
       timestamp: new Date(),
       isRead: false,
       fileSize,

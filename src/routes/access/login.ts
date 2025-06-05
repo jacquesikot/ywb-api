@@ -12,6 +12,7 @@ import validator from '../../helpers/validator';
 import { PublicRequest } from '../../types/app-request';
 import schema from './schema';
 import { getUserData } from './utils';
+import { sendLoginActivityEmail } from '../../mails/login-activity';
 
 const router = express.Router();
 
@@ -107,7 +108,15 @@ router.post(
     await KeystoreRepo.create(user, accessTokenKey, refreshTokenKey);
     const tokens = await createTokens(user, accessTokenKey, refreshTokenKey);
     const userData = await getUserData(user);
-
+    const deviceInfo = {
+      ip: req.body.ip,
+      city: req.body.city,
+      country: req.body.country,
+      device: req.body.device,
+      browser: req.body.browser,
+      os: req.body.os,
+    };
+    await sendLoginActivityEmail(user.email, deviceInfo);
     new SuccessResponse('Login Success', {
       user: userData,
       tokens: tokens,

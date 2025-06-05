@@ -18,6 +18,12 @@ export default {
   credential: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(6),
+    ip: Joi.string().optional(),
+    city: Joi.string().optional(),
+    country: Joi.string().optional(),
+    device: Joi.string().optional(),
+    browser: Joi.string().optional(),
+    os: Joi.string().optional(),
   }),
   refreshToken: Joi.object().keys({
     refreshToken: Joi.string().required().min(1),

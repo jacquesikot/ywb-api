@@ -15,6 +15,7 @@ import asyncHandler from '../../helpers/asyncHandler';
 import validator from '../../helpers/validator';
 import schema from './schema';
 import { getUserData } from './utils';
+import { sendSignupVerificationEmail } from '../../mails/signup';
 
 const router = express.Router();
 
@@ -133,7 +134,10 @@ router.post(
     );
 
     // Send email verification token to the user's email address
-    // await sendVerificationEmail(createdUser.email, emailVerificationToken);
+    await sendSignupVerificationEmail(
+      createdUser.email,
+      emailVerificationToken,
+    );
 
     const tokens = await createTokens(
       createdUser,
