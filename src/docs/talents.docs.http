@@ -3,9 +3,17 @@
 @api-key = da76b42eac9a7f4865a08ae8e6f11bf372a162a9d0e1a2990898ba8296e3433d
 
 ### Get all talents
-GET {{baseUrl}}/user/profile
-Authorization: Bearer {{authToken}}
+POST {{baseUrl}}/signup/basic
+Content-Type: application/json
 x-api-key: {{api-key}}
+
+{
+  "name": "John Doe",
+  "email": "davidoladele80@gmail.com",
+  "password": "Ola123456",
+  "role": "FREELANCER"
+}
+
 
 ### Get all talents
 PUT {{baseUrl}}/chat/list
