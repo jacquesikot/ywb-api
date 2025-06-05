@@ -3,15 +3,13 @@
 @api-key = da76b42eac9a7f4865a08ae8e6f11bf372a162a9d0e1a2990898ba8296e3433d
 
 ### Get all talents
-POST {{baseUrl}}/signup/basic
+POST {{baseUrl}}/reset-password
 Content-Type: application/json
 x-api-key: {{api-key}}
 
 {
-  "name": "John Doe",
-  "email": "davidoladele80@gmail.com",
-  "password": "Ola123456",
-  "role": "FREELANCER"
+	"token": "098f458102d144f56376404d6dbe4e6a339078efd7a0c08ef2071912f3a89218",
+  "password": "Oladele@321#"
 }
 
 

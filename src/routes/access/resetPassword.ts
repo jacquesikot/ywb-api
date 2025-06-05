@@ -13,6 +13,7 @@ import validator from '../../helpers/validator';
 import { PublicRequest } from '../../types/app-request';
 import schema from './schema';
 import { Types } from 'mongoose';
+import { sendPasswordChangedEmail } from '../../mails/password-success';
 
 const router = express.Router();
 
@@ -145,6 +146,7 @@ router.post(
 
       // Return response based on request type
       if (req.headers['content-type']?.includes('application/json')) {
+        await sendPasswordChangedEmail(user.email);
         return new SuccessResponse('Password reset successful', {}).send(res);
       } else {
         return res.render('reset-password', {
