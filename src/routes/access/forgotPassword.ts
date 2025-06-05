@@ -9,6 +9,7 @@ import validator from '../../helpers/validator';
 import { PublicRequest } from '../../types/app-request';
 import schema from './schema';
 import crypto from 'crypto';
+import { sendResetPasswordEmail } from '../../mails/reset-password';
 
 const router = express.Router();
 
@@ -69,8 +70,8 @@ router.post(
     // Generate reset password token
     const resetToken = await generateResetPasswordToken(user._id);
 
-    // In a real-world scenario, you would send an email with a link to reset password
-    // For now, we'll just return the token in the response
+    await sendResetPasswordEmail(user.email, resetToken);
+
     new SuccessResponse('Reset password token generated', {
       token: resetToken,
     }).send(res);

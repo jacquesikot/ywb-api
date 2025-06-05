@@ -2,17 +2,15 @@ import emailService from '../utils/send-pulse';
 
 const CLIENT_BASE_URL = 'https://yourworkbuddy.com';
 
-export const sendSignupVerificationEmail = async (
+export const sendResetPasswordEmail = async (
   userEmail: string,
-  emailVerificationToken: string,
+  resetToken: string,
 ) => {
   try {
-    // 3. Construct verification URL
-    const verificationLink = `${CLIENT_BASE_URL}/verify-email?token=${emailVerificationToken}&email=${encodeURIComponent(userEmail)}`;
+    const resetLink = `${CLIENT_BASE_URL}/reset-password?token=${resetToken}&email=${encodeURIComponent(userEmail)}`;
 
-    // 4. Prepare email HTML with link
     const emailData = {
-      header: 'Verify Your Email',
+      header: 'Reset Your Password',
       body: `
       <!DOCTYPE html>
       <html>
@@ -63,15 +61,15 @@ export const sendSignupVerificationEmail = async (
         <body>
           <div class="container">
             <div class="header">
-              <h2>Email Verification</h2>
+              <h2>Password Reset Request</h2>
             </div>
             <div class="content">
               <p>Hello,</p>
-              <p>Please click the button below to verify your email address:</p>
+              <p>You requested to reset your password. Click the button below to proceed:</p>
               <p style="text-align: center;">
-                <a href="${verificationLink}" class="btn">Verify Email</a>
+                <a href="${resetLink}" class="btn">Reset Password</a>
               </p>
-              <p>If you didn’t request this, you can safely ignore it.</p>
+              <p>This link will expire after a short period. If you didn’t request this, you can safely ignore this email.</p>
             </div>
             <div class="footer">
               &copy; ${new Date().getFullYear()} Your Work Buddy
@@ -84,6 +82,6 @@ export const sendSignupVerificationEmail = async (
 
     await emailService.sendEmail(userEmail, emailData);
   } catch (error) {
-    console.error('Error sending verification email:', error);
+    console.error('Error sending reset password email:', error);
   }
 };

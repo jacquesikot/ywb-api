@@ -31,19 +31,17 @@ export const sendLoginActivityEmail = async (
               max-width: 600px;
               margin: 10px auto;
               background: #fff;
-              padding: 20px;
-              border-radius: 8px;
+              padding: 10px;
               box-shadow: 0 0 10px rgba(0,0,0,0.1);
             }
             .header {
-              background: #28a745;
-              color: white;
-              padding: 10px;
+              background: #FF9933;
+              color: black;
+              padding: 5px;
               text-align: center;
-              border-radius: 8px 8px 0 0;
             }
             .content {
-              padding: 20px;
+              padding: 10px;
               font-size: 16px;
               line-height: 1.6;
               color: #333;

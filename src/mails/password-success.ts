@@ -2,17 +2,10 @@ import emailService from '../utils/send-pulse';
 
 const CLIENT_BASE_URL = 'https://yourworkbuddy.com';
 
-export const sendSignupVerificationEmail = async (
-  userEmail: string,
-  emailVerificationToken: string,
-) => {
+export const sendPasswordChangedEmail = async (userEmail: string) => {
   try {
-    // 3. Construct verification URL
-    const verificationLink = `${CLIENT_BASE_URL}/verify-email?token=${emailVerificationToken}&email=${encodeURIComponent(userEmail)}`;
-
-    // 4. Prepare email HTML with link
     const emailData = {
-      header: 'Verify Your Email',
+      header: 'Password Changed Successfully',
       body: `
       <!DOCTYPE html>
       <html>
@@ -43,15 +36,6 @@ export const sendSignupVerificationEmail = async (
               line-height: 1.6;
               color: #333;
             }
-            .btn {
-              display: inline-block;
-              padding: 10px 20px;
-              background-color: #FF9933;
-              color: white;
-              text-decoration: none;
-              border-radius: 4px;
-              margin-top: 20px;
-            }
             .footer {
               text-align: center;
               font-size: 12px;
@@ -63,15 +47,14 @@ export const sendSignupVerificationEmail = async (
         <body>
           <div class="container">
             <div class="header">
-              <h2>Email Verification</h2>
+              <h2>Password Updated</h2>
             </div>
             <div class="content">
               <p>Hello,</p>
-              <p>Please click the button below to verify your email address:</p>
-              <p style="text-align: center;">
-                <a href="${verificationLink}" class="btn">Verify Email</a>
-              </p>
-              <p>If you didn’t request this, you can safely ignore it.</p>
+              <p>Your password was changed successfully.</p>
+              <p>If you made this change, no further action is needed.</p>
+              <p>However, if you did not authorize this change, please <a href="${CLIENT_BASE_URL}/forgot-password">reset your password</a> immediately or contact support.</p>
+              <p>Thank you for using Your Work Buddy.</p>
             </div>
             <div class="footer">
               &copy; ${new Date().getFullYear()} Your Work Buddy
@@ -84,6 +67,6 @@ export const sendSignupVerificationEmail = async (
 
     await emailService.sendEmail(userEmail, emailData);
   } catch (error) {
-    console.error('Error sending verification email:', error);
+    console.error('Error sending password change confirmation email:', error);
   }
 };
