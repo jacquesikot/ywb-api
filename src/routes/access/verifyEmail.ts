@@ -5,6 +5,7 @@ import { BadRequestError } from '../../core/ApiError';
 import { SuccessResponse } from '../../core/ApiResponse';
 import UserRepo from '../../database/repository/UserRepo';
 import asyncHandler from '../../helpers/asyncHandler';
+import { sendWelcomeEmail } from '../../mails/welcome-mail';
 
 const router = express.Router();
 
@@ -69,7 +70,7 @@ router.post(
         ...user,
         verified: true,
       });
-
+      await sendWelcomeEmail(user.email, user.name);
       new SuccessResponse('Email verified successfully', {
         user: {
           email: user.email,

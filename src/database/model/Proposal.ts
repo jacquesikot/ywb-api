@@ -12,13 +12,14 @@ export enum ProposalStatus {
 
 export enum PricingMode {
   FIXED = 'fixed',
-  HOURLY = 'hourly',
+  MONTHLY = 'monthly',
 }
 
 export default interface Proposal {
   _id: Types.ObjectId;
   user: Types.ObjectId;
   job: Types.ObjectId;
+  chatId: Types.ObjectId;
   pricingMode: string;
   amount: number;
   coverLetter: string;
@@ -31,6 +32,7 @@ const schema = new Schema<Proposal>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     job: { type: Schema.Types.ObjectId, ref: 'Job', required: true },
+    chatId: { type: Schema.Types.ObjectId, ref: 'Chat', required: true },
     pricingMode: {
       type: String,
       required: true,

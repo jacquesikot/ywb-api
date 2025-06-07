@@ -75,9 +75,11 @@ export default {
         MessageType.AUDIO,
         MessageType.VIDEO,
         MessageType.FILE,
+        MessageType.PROPOSAL,
       )
       .required(),
     audioUrl: Joi.string().optional(),
+    proposalId: Joi.string().optional(),
     imageUrl: Joi.string().optional(),
     videoUrl: Joi.string().optional(),
     fileUrl: Joi.string().optional(),
@@ -228,7 +230,8 @@ export default {
   proposal: {
     create: Joi.object().keys({
       job: Joi.string().required(),
-      pricingMode: Joi.string().valid('fixed', 'hourly').required(),
+      chatId: Joi.string().required(),
+      pricingMode: Joi.string().valid('fixed', 'monthly').required(),
       amount: Joi.number().positive().required(),
       coverLetter: Joi.string().required(),
       milestones: Joi.array()

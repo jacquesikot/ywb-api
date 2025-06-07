@@ -8,6 +8,9 @@ import asyncHandler from '../helpers/asyncHandler';
 import validator from '../helpers/validator';
 import { ProtectedRequest } from '../types/app-request';
 import schema from './schema';
+import MessageRepo from '../database/repository/MessageRepo';
+import { MessageType } from '../database/model/Message';
+import JobRepo from '../database/repository/JobRepo';
 
 const router = express.Router();
 
@@ -90,12 +93,14 @@ router.post(
   '/create',
   validator(schema.proposal.create),
   asyncHandler(async (req: ProtectedRequest, res) => {
-    const { milestones, ...proposalData } = req.body;
+    const { job, chatId, milestones, ...proposalData } = req.body;
 
     // Create the proposal
     const proposal = await ProposalRepo.create({
       ...proposalData,
       user: req.user._id,
+      chatId,
+      job,
     });
 
     // Create milestones for the proposal
@@ -107,6 +112,19 @@ router.post(
         })),
       );
     }
+
+    const jobDetails = await JobRepo.findById(job);
+
+    await MessageRepo.create({
+      chatId,
+      userId: req.user._id,
+      content: `Proposal for ${jobDetails?.title}`,
+      type: MessageType.PROPOSAL,
+      timestamp: new Date(),
+      isRead: false,
+      proposalId: proposal._id,
+      status: 'Pending',
+    });
 
     new SuccessResponse('Proposal created successfully', proposal).send(res);
   }),

@@ -9,6 +9,7 @@ export enum MessageType {
   VIDEO = 'VIDEO',
   AUDIO = 'AUDIO',
   FILE = 'FILE',
+  PROPOSAL = 'PROPOSAL',
 }
 
 export default interface Message {
@@ -27,6 +28,8 @@ export default interface Message {
   fileExtension?: string;
   timestamp: Date;
   isRead: boolean;
+  proposalId?: Types.ObjectId;
+  status?: string;
 }
 
 const schema = new Schema<Message>(
@@ -70,7 +73,6 @@ const schema = new Schema<Message>(
       type: String,
       required: false,
     },
-
     fileType: {
       type: String,
       validate: {
@@ -95,6 +97,33 @@ const schema = new Schema<Message>(
     isRead: {
       type: Boolean,
       default: false,
+    },
+    proposalId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Proposal',
+      required: false,
+      validate: {
+        validator: function (this: Message, v: Types.ObjectId) {
+          return (
+            this.type !== MessageType.PROPOSAL ||
+            (this.type === MessageType.PROPOSAL && v !== undefined)
+          );
+        },
+        message: 'ProposalId is required when message type is PROPOSAL',
+      },
+    },
+    status: {
+      type: String,
+      required: false,
+      validate: {
+        validator: function (this: Message, v: string) {
+          return (
+            this.type !== MessageType.PROPOSAL ||
+            (this.type === MessageType.PROPOSAL && v !== undefined)
+          );
+        },
+        message: 'Status is required when message type is PROPOSAL',
+      },
     },
   },
   {

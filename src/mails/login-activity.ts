@@ -49,7 +49,6 @@ export const sendLoginActivityEmail = async (
             .info {
               background: #f1f1f1;
               padding: 10px;
-              border-radius: 6px;
               margin: 10px 0;
             }
             .footer {

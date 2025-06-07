@@ -1,6 +1,6 @@
 import emailService from '../utils/send-pulse';
 
-const CLIENT_BASE_URL = 'https://yourworkbuddy.com';
+const CLIENT_BASE_URL = process.env.CLIENT_URL;
 
 export const sendResetPasswordEmail = async (
   userEmail: string,

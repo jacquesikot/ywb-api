@@ -223,9 +223,8 @@ async function create(
   user.plan = Plan.FREE;
   user.planType = PlanType.MONTHLY;
 
-  console.log('user', user);
   const createdUser = await UserModel.create(user);
-  console.log('createdUser', createdUser);
+
   const keystore = await KeystoreRepo.create(
     createdUser,
     accessTokenKey,
